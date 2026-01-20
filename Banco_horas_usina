@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Banco de Horas - Usina</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{font-family:Arial;background:#f4f6f8;margin:0}
+header{background:#1e7e34;color:#fff;padding:15px;text-align:center}
+.container{max-width:1000px;margin:20px auto;background:#fff;padding:20px;border-radius:8px;box-shadow:0 0 10px rgba(0,0,0,.1)}
+input,select,button{padding:8px;margin:5px;width:100%;border-radius:4px;border:1px solid #ccc}
+button{background:#1e7e34;color:#fff;border:none;cursor:pointer}
+table{width:100%;border-collapse:collapse;margin-top:15px}
+th,td{border:1px solid #ddd;padding:8px;text-align:center}
+th{background:#1e7e34;color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.hidden{display:none}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Sistema de Banco de Horas</h1>
+</header>
+
+<div class="container" id="consultaBox">
+<h2>Consulta</h2>
+<input id="consultaNome" placeholder="Digite seu nome">
+<button onclick="consultar()">Consultar</button>
+<p id="resultado"></p>
+<hr>
+<button onclick="abrirLogin()">Área Administrativa</button>
+</div>
+
+<div class="container hidden" id="loginBox">
+<h2>Login Admin</h2>
+<input id="email" placeholder="Email">
+<input id="senha" type="password" placeholder="Senha">
+<button onclick="login()">Entrar</button>
+</div>
+
+<div class="container hidden" id="app">
+<h2>Lançamento</h2>
+
+<div class="grid">
+<input id="nome" placeholder="Colaborador">
+<select id="tipo">
+<option>Crédito</option>
+<option>Débito</option>
+</select>
+<input type="date" id="data">
+<input type="time" id="entrada">
+<input type="time" id="saida">
+<input id="motivo" placeholder="Motivo">
+</div>
+
+<button onclick="salvar()">Salvar</button>
+
+<table>
+<thead>
+<tr>
+<th>Nome</th><th>Tipo</th><th>Data</th><th>Entrada</th><th>Saída</th><th>Horas</th><th>Saldo</th><th>Motivo</th>
+</tr>
+</thead>
+<tbody id="lista"></tbody>
+</table>
+</div>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+const SUPABASE_URL = "COLE_AQUI_SEU_PROJECT_URL";
+const SUPABASE_KEY = "COLE_AQUI_SUA_PUBLISHABLE_KEY";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+window.abrirLogin = () =>{
+consultaBox.classList.add('hidden');
+loginBox.classList.remove('hidden');
+}
+
+window.login = async () =>{
+const { error } = await supabase.auth.signInWithPassword({
+email: email.value,
+password: senha.value
+});
+
+if(error) return alert("Erro no login");
+
+loginBox.classList.add('hidden');
+app.classList.remove('hidden');
+carregar();
+}
+
+window.salvar = async () =>{
+const horas = (new Date(`1970-01-01T${saida.value}`) - new Date(`1970-01-01T${entrada.value}`))/3600000;
+
+await supabase.from("banco_horas").insert([{
+nome:nome.value,
+tipo:tipo.value,
+data:data.value,
+entrada:entrada.value,
+saida:saida.value,
+horas:horas.toFixed(2),
+motivo:motivo.value
+}]);
+
+carregar();
+}
+
+window.consultar = async () =>{
+const nomeBusca = consultaNome.value;
+const { data } = await supabase.from("banco_horas").select("*").eq("nome", nomeBusca);
+
+let saldo = 0;
+data.forEach(r=>{
+saldo += r.tipo === "Crédito" ? r.horas : -r.horas;
+});
+
+resultado.innerText = `Saldo: ${saldo.toFixed(2)} horas`;
+}
+
+async function carregar(){
+const { data } = await supabase.from("banco_horas").select("*").order("data",{ascending:true});
+
+lista.innerHTML="";
+let saldos={};
+
+data.forEach(r=>{
+if(!saldos[r.nome]) saldos[r.nome]=0;
+saldos[r.nome]+= r.tipo==="Crédito"?r.horas:-r.horas;
+
+lista.innerHTML+=`
+<tr>
+<td>${r.nome}</td>
+<td>${r.tipo}</td>
+<td>${r.data}</td>
+<td>${r.entrada}</td>
+<td>${r.saida}</td>
+<td>${r.horas}</td>
+<td>${saldos[r.nome].toFixed(2)}</td>
+<td>${r.motivo}</td>
+</tr>`;
+});
+}
+</script>
+
+</body>
+</html>
