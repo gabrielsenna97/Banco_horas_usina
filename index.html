@@ -137,9 +137,14 @@ async function mostrarSaldo(nomeBusca){
 }
 
 // SALVAR
+// SALVAR
 window.salvar = async () =>{
   if(!nome.value.trim()){
     return alert("Digite o nome do colaborador");
+  }
+
+  if(!data.value){
+    return alert("Digite a data");
   }
 
   let horas = 0;
@@ -147,8 +152,11 @@ window.salvar = async () =>{
   let saidaVal = saida.value || null;
 
   if(tipo.value === "Crédito"){
+    if(!entrada.value || !saida.value){
+      return alert("Digite horários válidos para Crédito");
+    }
     horas = (new Date(`1970-01-01T${saida.value}`) - new Date(`1970-01-01T${entrada.value}`))/3600000;
-    if(horas <= 0) return alert("Digite horários válidos para Crédito");
+    if(horas <= 0) return alert("Horário de saída deve ser maior que o de entrada");
   } else {
     horas = parseFloat(horasDebito.value);
     if(isNaN(horas) || horas <= 0){
@@ -166,7 +174,7 @@ window.salvar = async () =>{
     saidaVal = null;
   }
 
-  await supabase.from("banco_horas").insert([{
+  const { error } = await supabase.from("banco_horas").insert([{
     nome: nome.value.trim(),
     tipo: tipo.value,
     data: data.value,
@@ -176,10 +184,18 @@ window.salvar = async () =>{
     motivo: motivo.value.trim()
   }]);
 
+  if(error){
+    console.log(error);
+    return alert("Erro ao salvar. Verifique os dados e tente novamente.");
+  }
+
   carregar();
   horasDebito.value = "";
+  entrada.value = "";
+  saida.value = "";
   saldoAtual.innerText = "";
 }
+
 // CONSULTA
 window.consultar = async () =>{
   const nomeBusca = consultaNome.value.trim();
