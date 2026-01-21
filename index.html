@@ -75,22 +75,20 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const SUPABASE_URL = "https://vsfuqtxgcklnarbwhgsg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_RNmE9Ov_erkSCqN2n7FWIQ_oTRX1rrO";
-
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ABRIR LOGIN
-window.abrirLogin = () =>{
+window.abrirLogin = () => {
   consultaBox.classList.add('hidden');
   loginBox.classList.remove('hidden');
 }
 
 // LOGIN
-window.login = async () =>{
+window.login = async () => {
   const { error } = await supabase.auth.signInWithPassword({
     email: email.value,
     password: senha.value
   });
-
   if(error) return alert("Erro no login");
 
   loginBox.classList.add('hidden');
@@ -99,11 +97,15 @@ window.login = async () =>{
 }
 
 // MOSTRAR/HIDE INPUT DE DÉBITO
-tipo.addEventListener("change", async ()=>{
+tipo.addEventListener("change", async () => {
   if(tipo.value === "Débito"){
     horasDebito.classList.remove("hidden");
+    entrada.classList.add("hidden");
+    saida.classList.add("hidden");
   } else {
     horasDebito.classList.add("hidden");
+    entrada.classList.remove("hidden");
+    saida.classList.remove("hidden");
   }
   if(nome.value.trim()!==""){
     await mostrarSaldo(nome.value.trim());
@@ -111,7 +113,7 @@ tipo.addEventListener("change", async ()=>{
 });
 
 // MOSTRAR SALDO AO DIGITAR NOME
-nome.addEventListener("input", async ()=>{
+nome.addEventListener("input", async () => {
   if(nome.value.trim()!==""){
     await mostrarSaldo(nome.value.trim());
   } else {
@@ -132,19 +134,13 @@ async function mostrarSaldo(nomeBusca){
   });
 
   saldoAtual.innerText = `Saldo atual do colaborador: ${saldo.toFixed(2)} horas`;
-
   return saldo;
 }
 
 // SALVAR
-// SALVAR
-window.salvar = async () =>{
+window.salvar = async () => {
   if(!nome.value.trim()){
     return alert("Digite o nome do colaborador");
-  }
-
-  if(!data.value){
-    return alert("Digite a data");
   }
 
   let horas = 0;
@@ -152,12 +148,10 @@ window.salvar = async () =>{
   let saidaVal = saida.value || null;
 
   if(tipo.value === "Crédito"){
-    if(!entrada.value || !saida.value){
-      return alert("Digite horários válidos para Crédito");
-    }
     horas = (new Date(`1970-01-01T${saida.value}`) - new Date(`1970-01-01T${entrada.value}`))/3600000;
-    if(horas <= 0) return alert("Horário de saída deve ser maior que o de entrada");
+    if(horas <= 0) return alert("Digite horários válidos para Crédito");
   } else {
+    // Para Débito: só usar horas digitadas
     horas = parseFloat(horasDebito.value);
     if(isNaN(horas) || horas <= 0){
       return alert("Digite uma quantidade válida de horas para Débito");
@@ -169,12 +163,11 @@ window.salvar = async () =>{
       return alert(`Saldo insuficiente! O colaborador tem apenas ${saldoAtualCalc.toFixed(2)} horas.`);
     }
 
-    // Para débito, não envia horários
     entradaVal = null;
     saidaVal = null;
   }
 
-  const { error } = await supabase.from("banco_horas").insert([{
+  await supabase.from("banco_horas").insert([{
     nome: nome.value.trim(),
     tipo: tipo.value,
     data: data.value,
@@ -184,22 +177,14 @@ window.salvar = async () =>{
     motivo: motivo.value.trim()
   }]);
 
-  if(error){
-    console.log(error);
-    return alert("Erro ao salvar. Verifique os dados e tente novamente.");
-  }
-
   carregar();
   horasDebito.value = "";
-  entrada.value = "";
-  saida.value = "";
   saldoAtual.innerText = "";
 }
 
 // CONSULTA
-window.consultar = async () =>{
+window.consultar = async () => {
   const nomeBusca = consultaNome.value.trim();
-
   if(!nomeBusca){
     resultado.innerText = "Digite um nome para consulta.";
     return;
@@ -227,28 +212,24 @@ window.consultar = async () =>{
   });
 
   const nomeCompleto = data[0].nome;
-
   resultado.innerText = `Colaborador: ${nomeCompleto} | Saldo: ${saldo.toFixed(2)} horas`;
 }
 
 // CARREGAR TABELA
 async function carregar(){
   const { data } = await supabase.from("banco_horas").select("*").order("data",{ascending:true});
-
   lista.innerHTML="";
   let saldos={};
-
   data.forEach(r=>{
     if(!saldos[r.nome]) saldos[r.nome]=0;
     saldos[r.nome]+= r.tipo==="Crédito"?r.horas:-r.horas;
-
     lista.innerHTML+=`
     <tr>
       <td>${r.nome}</td>
       <td>${r.tipo}</td>
       <td>${r.data}</td>
-      <td>${r.entrada}</td>
-      <td>${r.saida}</td>
+      <td>${r.entrada||''}</td>
+      <td>${r.saida||''}</td>
       <td>${r.horas}</td>
       <td>${saldos[r.nome].toFixed(2)}</td>
       <td>${r.motivo}</td>
