@@ -16,7 +16,6 @@ th,td{border:1px solid #ddd;padding:8px;text-align:center}
 th{background:#1e7e34;color:#fff}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
 .hidden{display:none}
-#saldoPreview{font-weight:bold;margin-left:6px}
 </style>
 </head>
 
@@ -46,23 +45,19 @@ th{background:#1e7e34;color:#fff}
 <h2>Lançamento</h2>
 
 <div class="grid">
-<input id="nome" placeholder="Colaborador" onkeyup="mostrarSaldoDigitado()">
-<div id="saldoPreview"></div>
-
-<select id="tipo" onchange="trocarTipo()">
+<input id="nome" placeholder="Colaborador">
+<select id="tipo">
 <option>Crédito</option>
 <option>Débito</option>
 </select>
-
 <input type="date" id="data">
 <input type="time" id="entrada">
 <input type="time" id="saida">
-
-<input id="horasDebito" class="hidden" type="number" step="0.1" placeholder="Horas a debitar">
-
+<input id="horasDebito" placeholder="Horas (somente Débito)" class="hidden">
 <input id="motivo" placeholder="Motivo">
 </div>
 
+<p id="saldoAtual"></p>
 <button onclick="salvar()">Salvar</button>
 
 <table>
@@ -83,124 +78,167 @@ const SUPABASE_KEY = "sb_publishable_RNmE9Ov_erkSCqN2n7FWIQ_oTRX1rrO";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let saldoAtual = 0;
-
+// ABRIR LOGIN
 window.abrirLogin = () =>{
-consultaBox.classList.add('hidden');
-loginBox.classList.remove('hidden');
+  consultaBox.classList.add('hidden');
+  loginBox.classList.remove('hidden');
 }
 
+// LOGIN
 window.login = async () =>{
-const { error } = await supabase.auth.signInWithPassword({
-email: email.value,
-password: senha.value
+  const { error } = await supabase.auth.signInWithPassword({
+    email: email.value,
+    password: senha.value
+  });
+
+  if(error) return alert("Erro no login");
+
+  loginBox.classList.add('hidden');
+  app.classList.remove('hidden');
+  carregar();
+}
+
+// MOSTRAR/HIDE INPUT DE DÉBITO
+tipo.addEventListener("change", async ()=>{
+  if(tipo.value === "Débito"){
+    horasDebito.classList.remove("hidden");
+    // Mostra saldo atual do colaborador
+    if(nome.value.trim()!==""){
+      await mostrarSaldo(nome.value.trim());
+    }
+  } else {
+    horasDebito.classList.add("hidden");
+    saldoAtual.innerText = "";
+  }
 });
 
-if(error) return alert("Erro no login");
-
-loginBox.classList.add('hidden');
-app.classList.remove('hidden');
-carregar();
-}
-
-window.trocarTipo = () =>{
-if(tipo.value==="Débito"){
-horasDebito.classList.remove("hidden");
-entrada.disabled=true;
-saida.disabled=true;
-}else{
-horasDebito.classList.add("hidden");
-entrada.disabled=false;
-saida.disabled=false;
-}
-}
-
-window.mostrarSaldoDigitado = async () =>{
-if(!nome.value) return;
-
-const { data } = await supabase
-.from("banco_horas")
-.select("tipo,horas")
-.ilike("nome", `%${nome.value}%`);
-
-saldoAtual=0;
-
-data.forEach(r=>{
-saldoAtual += r.tipo==="Crédito"?Number(r.horas):-Number(r.horas);
+// MOSTRAR SALDO AO DIGITAR NOME
+nome.addEventListener("input", async ()=>{
+  if(tipo.value === "Débito" && nome.value.trim()!==""){
+    await mostrarSaldo(nome.value.trim());
+  }
 });
 
-saldoPreview.innerText = `Saldo atual: ${saldoAtual.toFixed(2)} horas`;
+// FUNÇÃO SALDO
+async function mostrarSaldo(nomeBusca){
+  const { data } = await supabase
+    .from("banco_horas")
+    .select("*")
+    .ilike("nome", `%${nomeBusca}%`);
+
+  let saldo = 0;
+  data.forEach(r=>{
+    saldo += r.tipo === "Crédito" ? Number(r.horas) : -Number(r.horas);
+  });
+
+  saldoAtual.innerText = `Saldo atual do colaborador: ${saldo.toFixed(2)} horas`;
 }
 
+// SALVAR
 window.salvar = async () =>{
+  if(!nome.value.trim()){
+    return alert("Digite o nome do colaborador");
+  }
 
-let horas = 0;
+  let horas = 0;
 
-if(tipo.value==="Crédito"){
-horas = (new Date(`1970-01-01T${saida.value}`) - new Date(`1970-01-01T${entrada.value}`))/3600000;
-}else{
-horas = Number(horasDebito.value);
+  if(tipo.value === "Crédito"){
+    horas = (new Date(`1970-01-01T${saida.value}`) - new Date(`1970-01-01T${entrada.value}`))/3600000;
+  } else {
+    horas = parseFloat(horasDebito.value);
+    if(isNaN(horas) || horas <= 0){
+      return alert("Digite uma quantidade válida de horas para Débito");
+    }
 
-if(horas > saldoAtual){
-alert("Saldo insuficiente para débito.");
-return;
+    // verifica saldo antes de debitar
+    const { data: registros } = await supabase
+      .from("banco_horas")
+      .select("*")
+      .ilike("nome", `%${nome.value.trim()}%`);
+
+    let saldoAtualCalc = 0;
+    registros.forEach(r=>{
+      saldoAtualCalc += r.tipo === "Crédito" ? Number(r.horas) : -Number(r.horas);
+    });
+
+    if(horas > saldoAtualCalc){
+      return alert(`Saldo insuficiente! O colaborador tem apenas ${saldoAtualCalc.toFixed(2)} horas.`);
+    }
+  }
+
+  await supabase.from("banco_horas").insert([{
+    nome: nome.value.trim(),
+    tipo: tipo.value,
+    data: data.value,
+    entrada: entrada.value,
+    saida: saida.value,
+    horas: horas.toFixed(2),
+    motivo: motivo.value
+  }]);
+
+  carregar();
+  horasDebito.value = "";
+  saldoAtual.innerText = "";
 }
-}
 
-await supabase.from("banco_horas").insert([{
-nome:nome.value,
-tipo:tipo.value,
-data:data.value,
-entrada:entrada.value,
-saida:saida.value,
-horas:horas.toFixed(2),
-motivo:motivo.value
-}]);
-
-carregar();
-}
-
+// CONSULTA
 window.consultar = async () =>{
-const nomeBusca = consultaNome.value.trim();
+  const nomeBusca = consultaNome.value.trim();
 
-const { data } = await supabase
-.from("banco_horas")
-.select("*")
-.ilike("nome", `%${nomeBusca}%`);
+  if(!nomeBusca){
+    resultado.innerText = "Digite um nome para consulta.";
+    return;
+  }
 
-if(!data || !data.length){
-resultado.innerText="Nenhum registro encontrado.";
-return;
+  const { data, error } = await supabase
+    .from("banco_horas")
+    .select("*")
+    .ilike("nome", `%${nomeBusca}%`);
+
+  if(error){
+    alert("Erro na consulta");
+    console.log(error);
+    return;
+  }
+
+  if(!data || data.length === 0){
+    resultado.innerText = "Nenhum registro encontrado.";
+    return;
+  }
+
+  let saldo = 0;
+  data.forEach(r=>{
+    saldo += r.tipo === "Crédito" ? Number(r.horas) : -Number(r.horas);
+  });
+
+  const nomeCompleto = data[0].nome;
+
+  resultado.innerText = `Colaborador: ${nomeCompleto} | Saldo: ${saldo.toFixed(2)} horas`;
 }
 
-let saldo=0;
-data.forEach(r=>saldo+=r.tipo==="Crédito"?Number(r.horas):-Number(r.horas));
-
-resultado.innerText=`Colaborador: ${data[0].nome} | Saldo: ${saldo.toFixed(2)} horas`;
-}
-
+// CARREGAR TABELA
 async function carregar(){
-const { data } = await supabase.from("banco_horas").select("*").order("data",{ascending:true});
+  const { data } = await supabase.from("banco_horas").select("*").order("data",{ascending:true});
 
-lista.innerHTML="";
-let saldos={};
+  lista.innerHTML="";
+  let saldos={};
 
-data.forEach(r=>{
-if(!saldos[r.nome]) saldos[r.nome]=0;
-saldos[r.nome]+= r.tipo==="Crédito"?Number(r.horas):-Number(r.horas);
+  data.forEach(r=>{
+    if(!saldos[r.nome]) saldos[r.nome]=0;
+    saldos[r.nome]+= r.tipo==="Crédito"?r.horas:-r.horas;
 
-lista.innerHTML+=`
-<tr>
-<td>${r.nome}</td>
-<td>${r.tipo}</td>
-<td>${r.data}</td>
-<td>${r.entrada}</td>
-<td>${r.saida}</td>
-<td>${r.horas}</td>
-<td>${saldos[r.nome].toFixed(2)}</td>
-<td>${r.motivo}</td>
-</tr>`;
-});
+    lista.innerHTML+=`
+    <tr>
+      <td>${r.nome}</td>
+      <td>${r.tipo}</td>
+      <td>${r.data}</td>
+      <td>${r.entrada}</td>
+      <td>${r.saida}</td>
+      <td>${r.horas}</td>
+      <td>${saldos[r.nome].toFixed(2)}</td>
+      <td>${r.motivo}</td>
+    </tr>`;
+  });
 }
 </script>
 
