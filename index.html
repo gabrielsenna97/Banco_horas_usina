@@ -43,6 +43,9 @@ th{background:#1e7e34;color:#fff}
 
 <div class="container hidden" id="app">
 <h2>Lançamento</h2>
+  <!-- Botão de voltar -->
+<p style="cursor:pointer;font-size:18px;margin-bottom:10px;" onclick="voltarConsulta()">⬅ Voltar à página inicial</p>
+
 
 <div class="grid">
 <input id="nome" placeholder="Colaborador">
@@ -216,6 +219,7 @@ window.consultar = async () => {
 }
 
 // CARREGAR TABELA
+
 async function carregar(){
   const { data } = await supabase.from("banco_horas").select("*").order("data",{ascending:true});
   lista.innerHTML="";
@@ -236,6 +240,14 @@ async function carregar(){
     </tr>`;
   });
 }
+
+// FUNÇÃO VOLTAR PARA TELA DE CONSULTA
+function voltarConsulta(){
+  app.classList.add('hidden');        // esconde a área de lançamento
+  loginBox.classList.add('hidden');   // esconde a área de login caso esteja visível
+  consultaBox.classList.remove('hidden'); // mostra a tela de consulta
+}
+
 </script>
 
 </body>
