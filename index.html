@@ -129,7 +129,7 @@ window.consultar = async () =>{
     return;
   }
 
-  if(data.length === 0){
+ if(!data || data.length === 0){
     resultado.innerText = "Nenhum registro encontrado.";
     return;
   }
