@@ -143,10 +143,15 @@ window.salvar = async () =>{
   }
 
   let horas = 0;
+  let entradaValue = null;
+  let saidaValue = null;
 
   if(tipo.value === "Crédito"){
     horas = (new Date(`1970-01-01T${saida.value}`) - new Date(`1970-01-01T${entrada.value}`))/3600000;
     if(horas <= 0) return alert("Digite horários válidos para Crédito");
+
+    entradaValue = entrada.value;
+    saidaValue = saida.value;
   } else {
     horas = parseFloat(horasDebito.value);
     if(isNaN(horas) || horas <= 0){
@@ -164,8 +169,8 @@ window.salvar = async () =>{
     nome: nome.value.trim(),
     tipo: tipo.value,
     data: data.value,
-    entrada: entrada.value,
-    saida: saida.value,
+    entrada: entradaValue,
+    saida: saidaValue,
     horas: Number(horas.toFixed(2)),
     motivo: motivo.value.trim()
   }]);
