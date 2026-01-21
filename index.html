@@ -146,6 +146,9 @@ window.salvar = async () =>{
   let entradaValue = null;
   let saidaValue = null;
 
+  // pega saldo atual antes de inserir
+  const saldoAtualCalc = await mostrarSaldo(nome.value.trim());
+
   if(tipo.value === "Crédito"){
     horas = (new Date(`1970-01-01T${saida.value}`) - new Date(`1970-01-01T${entrada.value}`))/3600000;
     if(horas <= 0) return alert("Digite horários válidos para Crédito");
@@ -159,7 +162,6 @@ window.salvar = async () =>{
     }
 
     // verifica saldo antes de debitar
-    const saldoAtualCalc = await mostrarSaldo(nome.value.trim());
     if(horas > saldoAtualCalc){
       return alert(`Saldo insuficiente! O colaborador tem apenas ${saldoAtualCalc.toFixed(2)} horas.`);
     }
@@ -175,6 +177,7 @@ window.salvar = async () =>{
     motivo: motivo.value.trim()
   }]);
 
+  // recarrega tabela e saldo atualizado
   carregar();
   horasDebito.value = "";
   saldoAtual.innerText = "";
