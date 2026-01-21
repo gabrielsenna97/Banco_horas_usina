@@ -139,20 +139,31 @@ nome.addEventListener("input", async () => {
 });
 
 // FUNÇÃO SALDO
+// FUNÇÃO SALDO COM NOME DO COLABORADOR
 async function mostrarSaldo(nomeBusca){
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("banco_horas")
     .select("*")
     .ilike("nome", `%${nomeBusca}%`);
+
+  if(error || !data || data.length === 0){
+    saldoAtual.innerText = "Nenhum registro encontrado.";
+    return 0;
+  }
 
   let saldo = 0;
   data.forEach(r=>{
     saldo += r.tipo === "Crédito" ? Number(r.horas) : -Number(r.horas);
   });
 
-  saldoAtual.innerText = `Saldo atual do colaborador: ${saldo.toFixed(2)} horas`;
+  // Pega o nome completo do primeiro registro
+  const nomeCompleto = data[0].nome;
+
+  saldoAtual.innerText = `${nomeCompleto} | Saldo atual do colaborador: ${saldo.toFixed(2)} horas`;
+
   return saldo;
 }
+
 
 // SALVAR
 window.salvar = async () => {
