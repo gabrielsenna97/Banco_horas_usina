@@ -61,6 +61,9 @@ th{
   gap:10px;
 }
 .hidden{display:none;}
+.table-wrapper{
+  overflow-x:auto;
+}
 
 /* RESPONSIVO PARA CELULAR */
 @media (max-width: 600px){
@@ -68,13 +71,10 @@ th{
     font-size:18px;
   }
   .grid{
-    grid-template-columns:1fr; /* cada input ocupa 100% da largura */
+    grid-template-columns:1fr;
   }
   table, th, td{
     font-size:12px;
-  }
-  .table-wrapper{
-    overflow-x:auto;
   }
   button{
     font-size:14px;
@@ -151,6 +151,10 @@ th{
 <p id="saldoAtual"></p>
 <button onclick="salvar()">Salvar</button>
 
+<!-- PDF -->
+<input id="pdfNome" placeholder="Digite o nome do colaborador para PDF">
+<button onclick="gerarPDF()">Gerar PDF do Colaborador</button>
+
 <!-- TABELA ROLÁVEL NO CELULAR -->
 <div class="table-wrapper">
 <table>
@@ -163,6 +167,9 @@ th{
 </table>
 </div>
 </div>
+
+<!-- JS PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
@@ -346,6 +353,63 @@ window.voltarConsulta = function(){
   app.classList.add('hidden');        
   loginBox.classList.add('hidden');   
   consultaBox.classList.remove('hidden'); 
+}
+
+// FUNÇÃO GERAR PDF
+window.gerarPDF = async () => {
+  const colaborador = document.getElementById("pdfNome").value.trim();
+  if(!colaborador) return alert("Digite o nome do colaborador para gerar o PDF");
+
+  const { data, error } = await supabase
+    .from("banco_horas")
+    .select("*")
+    .ilike("nome", `%${colaborador}%`)
+    .order("data",{ascending:true});
+
+  if(error || !data || data.length === 0){
+    return alert("Nenhum registro encontrado para este colaborador.");
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  // Título
+  doc.setFontSize(16);
+  doc.text(`Relatório de Banco de Horas`, 105, 15, {align:"center"});
+  doc.setFontSize(12);
+  doc.text(`Colaborador: ${data[0].nome}`, 14, 25);
+
+  // Cabeçalho da tabela
+  let y = 35;
+  doc.text("Data",14,y);
+  doc.text("Tipo",44,y);
+  doc.text("Entrada",74,y);
+  doc.text("Saída",104,y);
+  doc.text("Horas",134,y);
+  doc.text("Saldo",154,y);
+  doc.text("Motivo",174,y);
+
+  y += 6;
+
+  // Saldo acumulado
+  let saldoAcumulado = 0;
+  data.forEach(r=>{
+    saldoAcumulado += r.tipo==="Crédito"?r.horas:-r.horas;
+    doc.text(r.data || '',14,y);
+    doc.text(r.tipo || '',44,y);
+    doc.text(r.entrada || '',74,y);
+    doc.text(r.saida || '',104,y);
+    doc.text(r.horas.toString() || '',134,y);
+    doc.text(saldoAcumulado.toFixed(2),154,y);
+    doc.text(r.motivo || '',174,y);
+    y += 6;
+    if(y > 280){
+      doc.addPage();
+      y = 20;
+    }
+  });
+
+  doc.save(`${colaborador}_BancoHoras.pdf`);
 }
 </script>
 
