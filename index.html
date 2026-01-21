@@ -139,7 +139,10 @@ window.consultar = async () =>{
     saldo += r.tipo === "Crédito" ? Number(r.horas) : -Number(r.horas);
   });
 
-  resultado.innerText = `Saldo encontrado: ${saldo.toFixed(2)} horas`;
+ const nomeCompleto = data[0].nome;
+
+resultado.innerText = `Colaborador: ${nomeCompleto} | Saldo: ${saldo.toFixed(2)} horas`;
+
 }
 
 async function carregar(){
