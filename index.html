@@ -386,19 +386,33 @@ window.gerarPDF = async () => {
   doc.text(`Colaborador: ${data[0].nome}`, margin, y);
   y += 8;
 
-  // Cabeçalho
-  function cabecalho(){
+ // Cabeçalho
+function cabecalho(){
     doc.setFillColor(30,126,52);
     doc.setTextColor(255,255,255);
     doc.setFont(undefined,'bold');
     const headers = ["Data","Tipo","Entrada","Saída","Horas","Saldo","Motivo"];
     let x = margin;
-    const colWidth = [20,20,20,20,20,20,80];
+    const colWidth = [25,25,25,25,20,20,60]; // ajustado
     headers.forEach((h,i)=>{
       doc.rect(x-2, y-5, colWidth[i], lineHeight, "F");
-      doc.text(h, x, y);
+      doc.text(h, x + 2, y); // leve deslocamento à direita
       x += colWidth[i];
     });
+    y += lineHeight;
+    doc.setFont(undefined,'normal');
+    doc.setTextColor(0,0,0);
+}
+
+// Linhas de dados
+const colWidth = [25,25,25,25,20,20,60]; // deve ser o mesmo do cabeçalho
+valores.forEach((v,i)=>{
+    // Se texto muito grande, truncar
+    let texto = v.length > 20 ? v.substring(0, 20) + "…" : v;
+    doc.text(texto, x + 2, y); // pequeno deslocamento para não encostar na borda
+    x += colWidth[i];
+});
+
     y += lineHeight;
     doc.setFont(undefined,'normal');
     doc.setTextColor(0,0,0);
