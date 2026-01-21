@@ -31,7 +31,7 @@ input,select,button{
   width:100%;
   border-radius:4px;
   border:1px solid #ccc;
-  text-transform: uppercase; /* força maiúsculas */
+  text-transform: uppercase;
   box-sizing:border-box;
 }
 button{
@@ -50,7 +50,6 @@ th,td{
   border:1px solid #ddd;
   padding:8px;
   text-align:center;
-  white-space: nowrap;
 }
 th{
   background:#1e7e34;
@@ -76,7 +75,6 @@ th{
   }
   table, th, td{
     font-size:12px;
-    white-space: normal;
   }
   button{
     font-size:14px;
@@ -98,6 +96,7 @@ th{
 <h1>Sistema de Banco de Horas</h1>
 </header>
 
+<!-- TELA DE CONSULTA -->
 <div class="container" id="consultaBox">
 <h2>Consulta</h2>
 <input id="consultaNome" placeholder="Digite seu nome">
@@ -107,6 +106,7 @@ th{
 <button onclick="abrirLogin()">Área Administrativa</button>
 </div>
 
+<!-- LOGIN -->
 <div class="container hidden" id="loginBox">
 <h2>Login Admin</h2>
 <input id="email" placeholder="Email">
@@ -114,6 +114,7 @@ th{
 <button onclick="login()">Entrar</button>
 </div>
 
+<!-- ÁREA ADMINISTRATIVA -->
 <div class="container hidden" id="app">
 <h2>Lançamento</h2>
 
@@ -149,6 +150,7 @@ th{
 <p id="saldoAtual"></p>
 <button onclick="salvar()">Salvar</button>
 
+<!-- PDF -->
 <input id="pdfNome" placeholder="Digite o nome do colaborador para PDF">
 <button onclick="gerarPDF()">Gerar PDF do Colaborador</button>
 
@@ -164,19 +166,22 @@ th{
 </div>
 </div>
 
+<!-- JS PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-
 const SUPABASE_URL = "https://vsfuqtxgcklnarbwhgsg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_RNmE9Ov_erkSCqN2n7FWIQ_oTRX1rrO";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// ABRIR LOGIN
 window.abrirLogin = () => {
   consultaBox.classList.add('hidden');
   loginBox.classList.remove('hidden');
 }
 
+// LOGIN
 window.login = async () => {
   const { error } = await supabase.auth.signInWithPassword({
     email: email.value,
@@ -188,12 +193,12 @@ window.login = async () => {
   carregar();
 }
 
+// FORÇAR MAIÚSCULAS
 document.querySelectorAll('input[type="text"], input[type="search"]').forEach(input => {
-  input.addEventListener('input', () => {
-    input.value = input.value.toUpperCase();
-  });
+  input.addEventListener('input', () => { input.value = input.value.toUpperCase(); });
 });
 
+// MOSTRAR/HIDE DÉBITO
 tipo.addEventListener("change", async () => {
   if(tipo.value === "Débito"){
     horasDebito.classList.remove("hidden");
@@ -204,92 +209,78 @@ tipo.addEventListener("change", async () => {
     entrada.classList.remove("hidden");
     saida.classList.remove("hidden");
   }
-  if(nome.value.trim()!==""){
-    await mostrarSaldo(nome.value.trim());
-  }
+  if(nome.value.trim()!=="") await mostrarSaldo(nome.value.trim());
 });
 
+// MOSTRAR SALDO AO DIGITAR NOME
 nome.addEventListener("input", async () => {
-  if(nome.value.trim()!==""){
-    await mostrarSaldo(nome.value.trim());
-  } else {
-    saldoAtual.innerText = "";
-  }
+  if(nome.value.trim()!=="") await mostrarSaldo(nome.value.trim());
+  else saldoAtual.innerText = "";
 });
 
+// FUNÇÃO SALDO
 async function mostrarSaldo(nomeBusca){
-  const { data, error } = await supabase
-    .from("banco_horas")
-    .select("*")
-    .ilike("nome", `%${nomeBusca}%`);
-
-  if(error || !data || data.length === 0){
-    saldoAtual.innerText = "Nenhum registro encontrado.";
-    return 0;
-  }
-
-  let saldo = 0;
-  data.forEach(r=>{
-    saldo += r.tipo === "Crédito" ? Number(r.horas) : -Number(r.horas);
-  });
-
-  saldoAtual.innerText = `${data[0].nome} | Saldo atual: ${saldo.toFixed(2)}h`;
+  const { data, error } = await supabase.from("banco_horas")
+    .select("*").ilike("nome", `%${nomeBusca}%`);
+  if(error || !data || data.length===0){ saldoAtual.innerText="Nenhum registro encontrado"; return 0; }
+  let saldo=0;
+  data.forEach(r=>{ saldo += r.tipo==="Crédito"?Number(r.horas):-Number(r.horas); });
+  saldoAtual.innerText = `${data[0].nome} | Saldo atual do colaborador: ${saldo.toFixed(2)} horas`;
   return saldo;
 }
 
+// SALVAR
 window.salvar = async () => {
   if(!nome.value.trim()) return alert("Digite o nome do colaborador");
   let horas=0, entradaVal=entrada.value||null, saidaVal=saida.value||null;
-
   if(tipo.value==="Crédito"){
     horas=(new Date(`1970-01-01T${saida.value}`)-new Date(`1970-01-01T${entrada.value}`))/3600000;
     if(horas<=0) return alert("Digite horários válidos para Crédito");
   } else {
     horas=parseFloat(horasDebito.value);
-    if(isNaN(horas)||horas<=0) return alert("Digite horas válidas");
-    const saldoAtualCalc = await mostrarSaldo(nome.value.trim());
-    if(horas>saldoAtualCalc) return alert(`Saldo insuficiente! Apenas ${saldoAtualCalc.toFixed(2)}h`);
+    if(isNaN(horas) || horas<=0) return alert("Digite uma quantidade válida de horas para Débito");
+    const saldoAtualCalc=await mostrarSaldo(nome.value.trim());
+    if(horas>saldoAtualCalc) return alert(`Saldo insuficiente! O colaborador tem apenas ${saldoAtualCalc.toFixed(2)} horas.`);
     entradaVal=null; saidaVal=null;
   }
-
   await supabase.from("banco_horas").insert([{
-    nome:nome.value.trim(),
-    tipo:tipo.value,
-    data:data.value,
-    entrada:entradaVal,
-    saida:saidaVal,
-    horas:Number(horas.toFixed(2)),
-    motivo:motivo.value.trim()
+    nome:nome.value.trim(), tipo:tipo.value, data:data.value,
+    entrada:entradaVal, saida:saidaVal,
+    horas:Number(horas.toFixed(2)), motivo:motivo.value.trim()
   }]);
-
-  carregar();
-  horasDebito.value=""; saldoAtual.innerText="";
+  carregar(); horasDebito.value=""; saldoAtual.innerText="";
 }
 
-window.consultar=async()=>{
+// CONSULTA
+window.consultar = async () => {
   const nomeBusca=consultaNome.value.trim();
-  if(!nomeBusca){resultado.innerText="Digite um nome"; return;}
-  const { data, error } = await supabase.from("banco_horas").select("*").ilike("nome", `%${nomeBusca}%`);
-  if(error){alert("Erro"); return;}
-  if(!data||data.length===0){resultado.innerText="Nenhum registro"; return;}
-  let saldo=0;
-  data.forEach(r=>{saldo+=r.tipo==="Crédito"?Number(r.horas):-Number(r.horas)});
-  resultado.innerText=`Colaborador: ${data[0].nome} | Saldo: ${saldo.toFixed(2)}h`;
+  if(!nomeBusca){ resultado.innerText="Digite um nome para consulta."; return; }
+  const { data, error } = await supabase.from("banco_horas")
+    .select("*").ilike("nome", `%${nomeBusca}%`);
+  if(error){ alert("Erro na consulta"); console.log(error); return; }
+  if(!data || data.length===0){ resultado.innerText="Nenhum registro encontrado."; return; }
+  let saldo=0; data.forEach(r=>{ saldo += r.tipo==="Crédito"?Number(r.horas):-Number(r.horas); });
+  resultado.innerText = `Colaborador: ${data[0].nome} | Saldo: ${saldo.toFixed(2)} horas`;
 }
 
+// CARREGAR TABELA
 async function carregar(){
   const { data } = await supabase.from("banco_horas").select("*").order("data",{ascending:true});
-  lista.innerHTML=""; let saldos={};
+  lista.innerHTML="";
+  let saldos={};
   data.forEach(r=>{
     if(!saldos[r.nome]) saldos[r.nome]=0;
-    saldos[r.nome]+=r.tipo==="Crédito"?r.horas:-r.horas;
+    saldos[r.nome]+= r.tipo==="Crédito"?r.horas:-r.horas;
     lista.innerHTML+=`
     <tr>
-      <td>${r.nome}</td><td>${r.tipo}</td><td>${r.data}</td><td>${r.entrada||''}</td><td>${r.saida||''}</td><td>${r.horas}</td><td>${saldos[r.nome].toFixed(2)}</td><td>${r.motivo}</td>
+      <td>${r.nome}</td><td>${r.tipo}</td><td>${r.data}</td>
+      <td>${r.entrada||''}</td><td>${r.saida||''}</td>
+      <td>${r.horas}</td><td>${saldos[r.nome].toFixed(2)}</td><td>${r.motivo}</td>
     </tr>`;
   });
 }
 
+// VOLTAR PARA CONSULTA
 window.voltarConsulta = function(){
   app.classList.add('hidden');        
   loginBox.classList.add('hidden');   
@@ -299,52 +290,53 @@ window.voltarConsulta = function(){
 // GERAR PDF PROFISSIONAL
 window.gerarPDF = async () => {
   const colaborador=document.getElementById("pdfNome").value.trim();
-  if(!colaborador) return alert("Digite o nome");
-
+  if(!colaborador) return alert("Digite o nome do colaborador");
   const { data, error } = await supabase.from("banco_horas")
     .select("*").ilike("nome", `%${colaborador}%`).order("data",{ascending:true});
-
   if(error || !data || data.length===0) return alert("Nenhum registro encontrado");
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({unit:'pt', format:'a4'});
-  const margin=40, pageWidth=595;
+  const margin=40, pageWidth=595, rowHeight=20;
   let y=margin;
 
   // Cabeçalho
-  doc.setFontSize(18);
-  doc.text("Relatório Banco de Horas", pageWidth/2, y, {align:"center"});
-  y+=30;
-  doc.setFontSize(12);
-  doc.text(`Colaborador: ${data[0].nome}`, margin, y);
-  y+=20;
+  doc.setFillColor(30,126,52);
+  doc.rect(0,0,pageWidth,50,'F');
+  doc.setFontSize(20); doc.setTextColor(255,255,255);
+  doc.text("Relatório de Banco de Horas", pageWidth/2,30,{align:"center"});
 
-  // Linha separadora
-  doc.setLineWidth(1);
-  doc.line(margin,y,pageWidth-margin,y);
-  y+=10;
+  // Info colaborador
+  doc.setFontSize(12); doc.setTextColor(0,0,0);
+  y+=60; doc.text(`Colaborador: ${data[0].nome}`, margin, y); y+=25;
 
   // Cabeçalho tabela
   const headers=["Data","Tipo","Entrada","Saída","Horas","Saldo","Motivo"];
-  const colX=[margin,100,160,220,280,340,400];
+  const colX=[margin,110,180,250,320,380,450];
+  doc.setFontSize(10); doc.setFillColor(200,200,200);
+  doc.rect(margin-2,y-rowHeight+4,pageWidth-margin*2+4,rowHeight,'F');
   headers.forEach((h,i)=>doc.text(h,colX[i],y));
-  y+=10;
-  doc.setLineWidth(0.5);
-  doc.line(margin,y,pageWidth-margin,y);
-  y+=10;
+  y+=rowHeight;
 
-  // Dados
+  // Dados tabela
   let saldoAcumulado=0;
-  data.forEach(r=>{
-    saldoAcumulado+=r.tipo==="Crédito"?r.horas:-r.horas;
-    const row=[r.data,r.tipo,r.entrada||'',r.saida||'',r.horas.toString(),saldoAcumulado.toFixed(2),r.motivo||''];
-    row.forEach((txt,i)=>doc.text(txt,colX[i],y));
-    y+=20;
-    if(y>750){ doc.addPage(); y=margin; }
+  data.forEach((r,index)=>{
+    if(y>750){ doc.addPage(); y=margin+20; }
+    saldoAcumulado += r.tipo==="Crédito"?r.horas:-r.horas;
+    doc.setFillColor(index%2===0?245:255, index%2===0?245:255, index%2===0?245:255);
+    doc.rect(margin-2,y-rowHeight+4,pageWidth-margin*2+4,rowHeight,'F');
+    const row=[r.data,r.tipo,r.entrada||'',r.saida||'',r.horas.toFixed(2),saldoAcumulado.toFixed(2),r.motivo||''];
+    row.forEach((txt,i)=>doc.text(txt.toString(),colX[i],y));
+    y+=rowHeight;
   });
+
+  y+=10;
+  doc.setFontSize(12); doc.setTextColor(30,126,52);
+  doc.text(`Saldo Total: ${saldoAcumulado.toFixed(2)} horas`, margin, y);
 
   doc.save(`${colaborador}_BancoHoras.pdf`);
 }
 </script>
+
 </body>
 </html>
