@@ -355,7 +355,7 @@ window.voltarConsulta = function(){
   consultaBox.classList.remove('hidden'); 
 }
 
-// FUNÇÃO GERAR PDF
+// FUNÇÃO GERAR PDF PROFISSIONAL
 window.gerarPDF = async () => {
   const colaborador = document.getElementById("pdfNome").value.trim();
   if(!colaborador) return alert("Digite o nome do colaborador para gerar o PDF");
@@ -373,40 +373,64 @@ window.gerarPDF = async () => {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 14;
+  const lineHeight = 7;
+  let y = 20;
+
   // Título
   doc.setFontSize(16);
-  doc.text(`Relatório de Banco de Horas`, 105, 15, {align:"center"});
+  doc.text("Relatório de Banco de Horas", pageWidth/2, y, {align:"center"});
+  y += 10;
   doc.setFontSize(12);
-  doc.text(`Colaborador: ${data[0].nome}`, 14, 25);
+  doc.text(`Colaborador: ${data[0].nome}`, margin, y);
+  y += 8;
 
-  // Cabeçalho da tabela
-  let y = 35;
-  doc.text("Data",14,y);
-  doc.text("Tipo",44,y);
-  doc.text("Entrada",74,y);
-  doc.text("Saída",104,y);
-  doc.text("Horas",134,y);
-  doc.text("Saldo",154,y);
-  doc.text("Motivo",174,y);
+  // Cabeçalho
+  function cabecalho(){
+    doc.setFillColor(30,126,52);
+    doc.setTextColor(255,255,255);
+    doc.setFont(undefined,'bold');
+    const headers = ["Data","Tipo","Entrada","Saída","Horas","Saldo","Motivo"];
+    let x = margin;
+    const colWidth = [20,20,20,20,20,20,80];
+    headers.forEach((h,i)=>{
+      doc.rect(x-2, y-5, colWidth[i], lineHeight, "F");
+      doc.text(h, x, y);
+      x += colWidth[i];
+    });
+    y += lineHeight;
+    doc.setFont(undefined,'normal');
+    doc.setTextColor(0,0,0);
+  }
 
-  y += 6;
+  cabecalho();
 
-  // Saldo acumulado
+  // Saldo acumulado e linhas
   let saldoAcumulado = 0;
-  data.forEach(r=>{
+  data.forEach((r,index)=>{
     saldoAcumulado += r.tipo==="Crédito"?r.horas:-r.horas;
-    doc.text(r.data || '',14,y);
-    doc.text(r.tipo || '',44,y);
-    doc.text(r.entrada || '',74,y);
-    doc.text(r.saida || '',104,y);
-    doc.text(r.horas.toString() || '',134,y);
-    doc.text(saldoAcumulado.toFixed(2),154,y);
-    doc.text(r.motivo || '',174,y);
-    y += 6;
+
+    // Quebra de página
     if(y > 280){
       doc.addPage();
       y = 20;
+      cabecalho();
     }
+
+    // Linha alternada
+    if(index%2===0) doc.setFillColor(240,240,240);
+    else doc.setFillColor(255,255,255);
+    doc.rect(margin-2, y-5, pageWidth-margin*2+4, lineHeight, "F");
+
+    let x = margin;
+    const colWidth = [20,20,20,20,20,20,80];
+    const valores = [r.data||"", r.tipo||"", r.entrada||"", r.saida||"", r.horas.toString(), saldoAcumulado.toFixed(2), r.motivo||""];
+    valores.forEach((v,i)=>{
+      doc.text(v, x, y);
+      x += colWidth[i];
+    });
+    y += lineHeight;
   });
 
   doc.save(`${colaborador}_BancoHoras.pdf`);
