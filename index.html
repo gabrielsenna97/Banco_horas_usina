@@ -166,8 +166,8 @@ window.salvar = async () =>{
     data: data.value,
     entrada: entrada.value,
     saida: saida.value,
-    horas: horas.toFixed(2),
-    motivo: motivo.value
+    horas: Number(horas.toFixed(2)),
+    motivo: motivo.value.trim()
   }]);
 
   carregar();
