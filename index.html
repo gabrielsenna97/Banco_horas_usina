@@ -16,6 +16,7 @@ th,td{border:1px solid #ddd;padding:8px;text-align:center}
 th{background:#1e7e34;color:#fff}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
 .hidden{display:none}
+#saldoPreview{font-weight:bold;margin-left:6px}
 </style>
 </head>
 
@@ -45,14 +46,20 @@ th{background:#1e7e34;color:#fff}
 <h2>Lançamento</h2>
 
 <div class="grid">
-<input id="nome" placeholder="Colaborador">
-<select id="tipo">
+<input id="nome" placeholder="Colaborador" onkeyup="mostrarSaldoDigitado()">
+<div id="saldoPreview"></div>
+
+<select id="tipo" onchange="trocarTipo()">
 <option>Crédito</option>
 <option>Débito</option>
 </select>
+
 <input type="date" id="data">
 <input type="time" id="entrada">
 <input type="time" id="saida">
+
+<input id="horasDebito" class="hidden" type="number" step="0.1" placeholder="Horas a debitar">
+
 <input id="motivo" placeholder="Motivo">
 </div>
 
@@ -76,6 +83,8 @@ const SUPABASE_KEY = "sb_publishable_RNmE9Ov_erkSCqN2n7FWIQ_oTRX1rrO";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+let saldoAtual = 0;
+
 window.abrirLogin = () =>{
 consultaBox.classList.add('hidden');
 loginBox.classList.remove('hidden');
@@ -94,8 +103,49 @@ app.classList.remove('hidden');
 carregar();
 }
 
+window.trocarTipo = () =>{
+if(tipo.value==="Débito"){
+horasDebito.classList.remove("hidden");
+entrada.disabled=true;
+saida.disabled=true;
+}else{
+horasDebito.classList.add("hidden");
+entrada.disabled=false;
+saida.disabled=false;
+}
+}
+
+window.mostrarSaldoDigitado = async () =>{
+if(!nome.value) return;
+
+const { data } = await supabase
+.from("banco_horas")
+.select("tipo,horas")
+.ilike("nome", `%${nome.value}%`);
+
+saldoAtual=0;
+
+data.forEach(r=>{
+saldoAtual += r.tipo==="Crédito"?Number(r.horas):-Number(r.horas);
+});
+
+saldoPreview.innerText = `Saldo atual: ${saldoAtual.toFixed(2)} horas`;
+}
+
 window.salvar = async () =>{
-const horas = (new Date(`1970-01-01T${saida.value}`) - new Date(`1970-01-01T${entrada.value}`))/3600000;
+
+let horas = 0;
+
+if(tipo.value==="Crédito"){
+horas = (new Date(`1970-01-01T${saida.value}`) - new Date(`1970-01-01T${entrada.value}`))/3600000;
+}else{
+horas = Number(horasDebito.value);
+
+if(horas > saldoAtual){
+alert("Saldo insuficiente para débito.");
+return;
+}
+}
 
 await supabase.from("banco_horas").insert([{
 nome:nome.value,
@@ -111,38 +161,22 @@ carregar();
 }
 
 window.consultar = async () =>{
-  const nomeBusca = consultaNome.value.trim();
+const nomeBusca = consultaNome.value.trim();
 
-  if(!nomeBusca){
-    resultado.innerText = "Digite um nome para consulta.";
-    return;
-  }
+const { data } = await supabase
+.from("banco_horas")
+.select("*")
+.ilike("nome", `%${nomeBusca}%`);
 
-  const { data, error } = await supabase
-    .from("banco_horas")
-    .select("*")
-    .ilike("nome", `%${nomeBusca}%`);
+if(!data || !data.length){
+resultado.innerText="Nenhum registro encontrado.";
+return;
+}
 
-  if(error){
-    alert("Erro na consulta");
-    console.log(error);
-    return;
-  }
+let saldo=0;
+data.forEach(r=>saldo+=r.tipo==="Crédito"?Number(r.horas):-Number(r.horas));
 
- if(!data || data.length === 0){
-    resultado.innerText = "Nenhum registro encontrado.";
-    return;
-  }
-
-  let saldo = 0;
-  data.forEach(r=>{
-    saldo += r.tipo === "Crédito" ? Number(r.horas) : -Number(r.horas);
-  });
-
- const nomeCompleto = data[0].nome;
-
-resultado.innerText = `Colaborador: ${nomeCompleto} | Saldo: ${saldo.toFixed(2)} horas`;
-
+resultado.innerText=`Colaborador: ${data[0].nome} | Saldo: ${saldo.toFixed(2)} horas`;
 }
 
 async function carregar(){
@@ -153,7 +187,7 @@ let saldos={};
 
 data.forEach(r=>{
 if(!saldos[r.nome]) saldos[r.nome]=0;
-saldos[r.nome]+= r.tipo==="Crédito"?r.horas:-r.horas;
+saldos[r.nome]+= r.tipo==="Crédito"?Number(r.horas):-Number(r.horas);
 
 lista.innerHTML+=`
 <tr>
