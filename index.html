@@ -102,20 +102,20 @@ window.login = async () =>{
 tipo.addEventListener("change", async ()=>{
   if(tipo.value === "Débito"){
     horasDebito.classList.remove("hidden");
-    // Mostra saldo atual do colaborador
-    if(nome.value.trim()!==""){
-      await mostrarSaldo(nome.value.trim());
-    }
   } else {
     horasDebito.classList.add("hidden");
-    saldoAtual.innerText = "";
+  }
+  if(nome.value.trim()!==""){
+    await mostrarSaldo(nome.value.trim());
   }
 });
 
 // MOSTRAR SALDO AO DIGITAR NOME
 nome.addEventListener("input", async ()=>{
-  if(tipo.value === "Débito" && nome.value.trim()!==""){
+  if(nome.value.trim()!==""){
     await mostrarSaldo(nome.value.trim());
+  } else {
+    saldoAtual.innerText = "";
   }
 });
 
@@ -132,6 +132,8 @@ async function mostrarSaldo(nomeBusca){
   });
 
   saldoAtual.innerText = `Saldo atual do colaborador: ${saldo.toFixed(2)} horas`;
+
+  return saldo;
 }
 
 // SALVAR
@@ -144,6 +146,7 @@ window.salvar = async () =>{
 
   if(tipo.value === "Crédito"){
     horas = (new Date(`1970-01-01T${saida.value}`) - new Date(`1970-01-01T${entrada.value}`))/3600000;
+    if(horas <= 0) return alert("Digite horários válidos para Crédito");
   } else {
     horas = parseFloat(horasDebito.value);
     if(isNaN(horas) || horas <= 0){
@@ -151,16 +154,7 @@ window.salvar = async () =>{
     }
 
     // verifica saldo antes de debitar
-    const { data: registros } = await supabase
-      .from("banco_horas")
-      .select("*")
-      .ilike("nome", `%${nome.value.trim()}%`);
-
-    let saldoAtualCalc = 0;
-    registros.forEach(r=>{
-      saldoAtualCalc += r.tipo === "Crédito" ? Number(r.horas) : -Number(r.horas);
-    });
-
+    const saldoAtualCalc = await mostrarSaldo(nome.value.trim());
     if(horas > saldoAtualCalc){
       return alert(`Saldo insuficiente! O colaborador tem apenas ${saldoAtualCalc.toFixed(2)} horas.`);
     }
