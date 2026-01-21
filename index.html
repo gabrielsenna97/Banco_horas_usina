@@ -111,15 +111,35 @@ carregar();
 }
 
 window.consultar = async () =>{
-const nomeBusca = consultaNome.value;
-const { data } = await supabase.from("banco_horas").select("*").eq("nome", nomeBusca);
+  const nomeBusca = consultaNome.value.trim();
 
-let saldo = 0;
-data.forEach(r=>{
-saldo += r.tipo === "Crédito" ? r.horas : -r.horas;
-});
+  if(!nomeBusca){
+    resultado.innerText = "Digite um nome para consulta.";
+    return;
+  }
 
-resultado.innerText = `Saldo: ${saldo.toFixed(2)} horas`;
+  const { data, error } = await supabase
+    .from("banco_horas")
+    .select("*")
+    .ilike("nome", `%${nomeBusca}%`);
+
+  if(error){
+    alert("Erro na consulta");
+    console.log(error);
+    return;
+  }
+
+  if(data.length === 0){
+    resultado.innerText = "Nenhum registro encontrado.";
+    return;
+  }
+
+  let saldo = 0;
+  data.forEach(r=>{
+    saldo += r.tipo === "Crédito" ? Number(r.horas) : -Number(r.horas);
+  });
+
+  resultado.innerText = `Saldo encontrado: ${saldo.toFixed(2)} horas`;
 }
 
 async function carregar(){
