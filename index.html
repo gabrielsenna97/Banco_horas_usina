@@ -16,7 +16,6 @@ th,td{border:1px solid #ddd;padding:8px;text-align:center}
 th{background:#1e7e34;color:#fff}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
 .hidden{display:none}
-.voltar{cursor:pointer;font-size:22px;margin-bottom:10px;display:inline-block;color:black;}
 </style>
 </head>
 
@@ -44,8 +43,23 @@ th{background:#1e7e34;color:#fff}
 
 <div class="container hidden" id="app">
 <h2>Lançamento</h2>
-  <!-- Botão de voltar com seta preta -->
-<span class="voltar" onclick="voltarConsulta()">← Voltar à página inicial</span>
+
+<!-- Botão discreto de voltar -->
+<div style="display:flex; align-items:center; margin-bottom:10px;">
+  <button onclick="voltarConsulta()" style="
+    background:none; 
+    border:none; 
+    font-size:20px; 
+    cursor:pointer; 
+    color:#1e7e34;
+    display:flex;
+    align-items:center;
+    gap:5px;
+    padding:0;
+  ">
+    ← Voltar
+  </button>
+</div>
 
 <div class="grid">
 <input id="nome" placeholder="Colaborador">
@@ -124,25 +138,19 @@ nome.addEventListener("input", async () => {
   }
 });
 
-// FUNÇÃO SALDO COM NOME COMPLETO
+// FUNÇÃO SALDO
 async function mostrarSaldo(nomeBusca){
   const { data } = await supabase
     .from("banco_horas")
     .select("*")
     .ilike("nome", `%${nomeBusca}%`);
 
-  if(!data || data.length === 0){
-    saldoAtual.innerText = "";
-    return 0;
-  }
-
   let saldo = 0;
   data.forEach(r=>{
     saldo += r.tipo === "Crédito" ? Number(r.horas) : -Number(r.horas);
   });
 
-  const nomeCompleto = data[0].nome; 
-  saldoAtual.innerText = `${nomeCompleto} | Saldo atual: ${saldo.toFixed(2)} horas`;
+  saldoAtual.innerText = `Saldo atual do colaborador: ${saldo.toFixed(2)} horas`;
   return saldo;
 }
 
@@ -160,7 +168,7 @@ window.salvar = async () => {
     horas = (new Date(`1970-01-01T${saida.value}`) - new Date(`1970-01-01T${entrada.value}`))/3600000;
     if(horas <= 0) return alert("Digite horários válidos para Crédito");
   } else {
-    // Débito: só usar horas digitadas
+    // Para Débito: só usar horas digitadas
     horas = parseFloat(horasDebito.value);
     if(isNaN(horas) || horas <= 0){
       return alert("Digite uma quantidade válida de horas para Débito");
@@ -248,11 +256,10 @@ async function carregar(){
 
 // FUNÇÃO VOLTAR PARA TELA DE CONSULTA
 function voltarConsulta(){
-  app.classList.add('hidden');        // esconde a área de lançamento
-  loginBox.classList.add('hidden');   // esconde a área de login caso esteja visível
-  consultaBox.classList.remove('hidden'); // mostra a tela de consulta
+  app.classList.add('hidden');        
+  loginBox.classList.add('hidden');   
+  consultaBox.classList.remove('hidden'); 
 }
-
 </script>
 
 </body>
