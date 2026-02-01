@@ -61,9 +61,7 @@ th{
   gap:10px;
 }
 .hidden{display:none;}
-.table-wrapper{
-  overflow-x:auto;
-}
+.table-wrapper{overflow-x:auto;}
 </style>
 </head>
 
@@ -151,7 +149,6 @@ window.login = async () => {
   carregar();
 }
 
-// ✅ FUNÇÃO PARA FORMATAR EM HH:MM
 function formatarHora(decimal){
   const totalMin = Math.round(decimal * 60);
   const h = Math.floor(totalMin / 60);
@@ -188,14 +185,14 @@ window.salvar = async () => {
     horas=parseFloat(horasDebito.value);
     if(isNaN(horas) || horas<=0) return alert("Digite uma quantidade válida de horas para Débito");
     const saldoAtualCalc=await mostrarSaldo(nome.value.trim());
-    if(horas>saldoAtualCalc) return alert(`Saldo insuficiente! O colaborador tem apenas ${saldoAtualCalc.toFixed(2)} horas.`);
+    if(horas>saldoAtualCalc) return alert(`Saldo insuficiente! O colaborador tem apenas ${formatarHora(saldoAtualCalc)}`);
     entradaVal=null; saidaVal=null;
   }
 
   await supabase.from("banco_horas").insert([{
     nome:nome.value.trim(), tipo:tipo.value, data:data.value,
     entrada:entradaVal, saida:saidaVal,
-    horas:Number(horas.toFixed(2)), motivo:motivo.value.trim()
+    horas:Number(horas.toFixed(4)), motivo:motivo.value.trim()
   }]);
 
   carregar();
@@ -243,6 +240,57 @@ window.voltarConsulta = function(){
   loginBox.classList.add('hidden');   
   consultaBox.classList.remove('hidden'); 
 }
+
+window.gerarPDF = async () => {
+  const nomeBusca = pdfNome.value.trim();
+  if(!nomeBusca) return alert("Digite o nome do colaborador");
+
+  const { data } = await supabase
+    .from("banco_horas")
+    .select("*")
+    .ilike("nome", `%${nomeBusca}%`)
+    .order("data",{ascending:true});
+
+  if(!data || data.length===0){
+    alert("Nenhum registro encontrado para este colaborador.");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  let y = 10;
+  doc.setFontSize(12);
+  doc.text(`Banco de Horas - ${data[0].nome}`, 10, y);
+  y += 10;
+
+  let saldoMin = 0;
+
+  data.forEach(r => {
+    saldoMin += r.tipo === "Crédito" ? r.horas*60 : -r.horas*60;
+
+    const linha = [
+      r.data,
+      r.tipo,
+      r.entrada || "",
+      r.saida || "",
+      formatarHora(r.horas),
+      formatarHora(saldoMin/60),
+      r.motivo || ""
+    ].join(" | ");
+
+    if(y > 280){
+      doc.addPage();
+      y = 10;
+    }
+
+    doc.setFontSize(9);
+    doc.text(linha, 10, y);
+    y += 6;
+  });
+
+  doc.save(`Banco_Horas_${data[0].nome}.pdf`);
+};
 </script>
 
 </body>
