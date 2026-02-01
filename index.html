@@ -61,7 +61,32 @@ th{
   gap:10px;
 }
 .hidden{display:none;}
-.table-wrapper{overflow-x:auto;}
+.table-wrapper{
+  overflow-x:auto;
+}
+
+/* RESPONSIVO PARA CELULAR */
+@media (max-width: 600px){
+  header h1{
+    font-size:18px;
+  }
+  .grid{
+    grid-template-columns:1fr;
+  }
+  table, th, td{
+    font-size:12px;
+  }
+  button{
+    font-size:14px;
+    padding:6px;
+  }
+  p#saldoAtual{
+    font-size:14px;
+  }
+  input, select{
+    font-size:14px;
+  }
+}
 </style>
 </head>
 
@@ -71,6 +96,7 @@ th{
 <h1>Sistema de Banco de Horas</h1>
 </header>
 
+<!-- TELA DE CONSULTA -->
 <div class="container" id="consultaBox">
 <h2>Consulta</h2>
 <input id="consultaNome" placeholder="Digite seu nome">
@@ -80,6 +106,7 @@ th{
 <button onclick="abrirLogin()">Área Administrativa</button>
 </div>
 
+<!-- LOGIN -->
 <div class="container hidden" id="loginBox">
 <h2>Login Admin</h2>
 <input id="email" placeholder="Email">
@@ -87,11 +114,24 @@ th{
 <button onclick="login()">Entrar</button>
 </div>
 
+<!-- ÁREA ADMINISTRATIVA -->
 <div class="container hidden" id="app">
 <h2>Lançamento</h2>
 
 <div style="display:flex; align-items:center; margin-bottom:10px;">
-  <button onclick="voltarConsulta()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#1e7e34;">← Voltar</button>
+  <button onclick="voltarConsulta()" style="
+    background:none; 
+    border:none; 
+    font-size:18px; 
+    cursor:pointer; 
+    color:#1e7e34;
+    display:flex;
+    align-items:center;
+    gap:5px;
+    padding:0;
+  ">
+    ← Voltar
+  </button>
 </div>
 
 <div class="grid">
@@ -110,6 +150,7 @@ th{
 <p id="saldoAtual"></p>
 <button onclick="salvar()">Salvar</button>
 
+<!-- PDF -->
 <input id="pdfNome" placeholder="Digite o nome do colaborador para PDF">
 <button onclick="gerarPDF()">Gerar PDF do Colaborador</button>
 
@@ -123,8 +164,8 @@ th{
 <tbody id="lista"></tbody>
 </table>
 </div>
-</div>
 
+<!-- JS PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script type="module">
@@ -133,11 +174,13 @@ const SUPABASE_URL = "https://vsfuqtxgcklnarbwhgsg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_RNmE9Ov_erkSCqN2n7FWIQ_oTRX1rrO";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// ABRIR LOGIN
 window.abrirLogin = () => {
   consultaBox.classList.add('hidden');
   loginBox.classList.remove('hidden');
 }
 
+// LOGIN
 window.login = async () => {
   const { error } = await supabase.auth.signInWithPassword({
     email: email.value,
@@ -149,71 +192,86 @@ window.login = async () => {
   carregar();
 }
 
-function formatarHora(decimal){
-  const totalMin = Math.round(decimal * 60);
-  const h = Math.floor(totalMin / 60);
-  const m = totalMin % 60;
-  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-}
+// FORÇAR MAIÚSCULAS
+document.querySelectorAll('input[type="text"], input[type="search"]').forEach(input => {
+  input.addEventListener('input', () => { input.value = input.value.toUpperCase(); });
+});
 
+// MOSTRAR/HIDE DÉBITO
 tipo.addEventListener("change", async () => {
   if(tipo.value === "Débito"){
     horasDebito.classList.remove("hidden");
     entrada.classList.add("hidden");
     saida.classList.add("hidden");
-    entrada.value = "";
-    saida.value = "";
-  } 
-  else {
+  } else {
     horasDebito.classList.add("hidden");
     entrada.classList.remove("hidden");
     saida.classList.remove("hidden");
-    horasDebito.value = "";
   }
-
   if(nome.value.trim()!=="") await mostrarSaldo(nome.value.trim());
 });
 
+// MOSTRAR SALDO AO DIGITAR NOME
+nome.addEventListener("input", async () => {
+  if(nome.value.trim()!=="") await mostrarSaldo(nome.value.trim());
+  else saldoAtual.innerText = "";
+});
+
+// FUNÇÃO SALDO
 async function mostrarSaldo(nomeBusca){
-  const { data } = await supabase.from("banco_horas")
+  const { data, error } = await supabase.from("banco_horas")
     .select("*").ilike("nome", `%${nomeBusca}%`);
+  if(error || !data || data.length===0){ 
+    saldoAtual.innerText="Nenhum registro encontrado"; 
+    return 0; 
+  }
 
-  if(!data || data.length===0){ saldoAtual.innerText="Nenhum registro encontrado"; return 0; }
+  let saldo = 0;
 
-  let saldoMin=0;
-  data.forEach(r=>{
-    saldoMin += r.tipo==="Crédito" ? r.horas*60 : -r.horas*60;
+  data.forEach(r => {
+    if(r.tipo === "Crédito"){
+      if(r.horas.includes(":")){ // HH:MM
+        let [h, m] = r.horas.split(":").map(Number);
+        saldo += h + m/60;
+      } else {
+        saldo += Number(r.horas); // caso ainda tenha decimal antigo
+      }
+    } else {
+      saldo -= Number(r.horas);
+    }
   });
 
-  saldoAtual.innerText =
-  `${data[0].nome} | Saldo atual do colaborador: ${formatarHora(saldoMin/60)}`;
-
-  return saldoMin/60;
+  saldoAtual.innerText = `${data[0].nome} | Saldo atual do colaborador: ${Math.floor(saldo)}:${Math.round((saldo-Math.floor(saldo))*60).toString().padStart(2,'0')}`;
+  return saldo;
 }
 
+// SALVAR
 window.salvar = async () => {
   if(!nome.value.trim()) return alert("Digite o nome do colaborador");
 
-  let horas=0, entradaVal=null, saidaVal=null;
+  let horas = 0, entradaVal = entrada.value || null, saidaVal = saida.value || null;
 
-  if(tipo.value==="Crédito"){
+  if(tipo.value === "Crédito"){
+    let diffMs = new Date(`1970-01-01T${saida.value}`) - new Date(`1970-01-01T${entrada.value}`);
+    if(diffMs <= 0) return alert("Digite horários válidos para Crédito");
+
+    // converter para HH:MM
+    let totalMinutos = Math.floor(diffMs / 60000);
+    let h = Math.floor(totalMinutos / 60);
+    let m = totalMinutos % 60;
+    
+    horas = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
     entradaVal = entrada.value;
-    saidaVal   = saida.value;
-
-    horas = (new Date(`1970-01-01T${saidaVal}`) - new Date(`1970-01-01T${entradaVal}`)) / 3600000;
-
-    if(horas<=0) return alert("Digite horários válidos para Crédito");
-  } 
-  else {
-    horas = parseFloat(horasDebito.value.replace(",", "."));
-
-    if(isNaN(horas) || horas<=0) 
-      return alert("Digite uma quantidade válida de horas para Débito");
+    saidaVal = saida.value;
+  } else { // Débito
+    horas = parseFloat(horasDebito.value);
+    if(isNaN(horas) || horas <= 0) return alert("Digite uma quantidade válida de horas para Débito");
 
     const saldoAtualCalc = await mostrarSaldo(nome.value.trim());
+    if(horas > saldoAtualCalc) return alert(`Saldo insuficiente! O colaborador tem apenas ${Math.floor(saldoAtualCalc)}:${Math.round((saldoAtualCalc-Math.floor(saldoAtualCalc))*60).toString().padStart(2,'0')} horas.`);
 
-    if(horas > saldoAtualCalc) 
-      return alert(`Saldo insuficiente! O colaborador tem apenas ${formatarHora(saldoAtualCalc)}`);
+    entradaVal = null; 
+    saidaVal = null;
   }
 
   await supabase.from("banco_horas").insert([{
@@ -222,106 +280,139 @@ window.salvar = async () => {
     data: data.value,
     entrada: entradaVal,
     saida: saidaVal,
-    horas: Number(horas.toFixed(4)),
+    horas: horas,
     motivo: motivo.value.trim()
   }]);
 
-  carregar();
+  carregar(); 
+  horasDebito.value=""; 
+  saldoAtual.innerText="";
 }
 
+// CONSULTA
 window.consultar = async () => {
   const nomeBusca=consultaNome.value.trim();
   if(!nomeBusca){ resultado.innerText="Digite um nome para consulta."; return; }
-
-  const { data } = await supabase.from("banco_horas")
+  const { data, error } = await supabase.from("banco_horas")
     .select("*").ilike("nome", `%${nomeBusca}%`);
-
+  if(error){ alert("Erro na consulta"); console.log(error); return; }
   if(!data || data.length===0){ resultado.innerText="Nenhum registro encontrado."; return; }
-
-  let saldoMin=0;
+  let saldo=0; 
   data.forEach(r=>{
-    saldoMin += r.tipo==="Crédito" ? r.horas*60 : -r.horas*60;
+    if(r.tipo==="Crédito"){
+      if(r.horas.includes(":")){
+        let [h,m] = r.horas.split(":").map(Number);
+        saldo += h + m/60;
+      } else {
+        saldo += Number(r.horas);
+      }
+    } else {
+      saldo -= Number(r.horas);
+    }
   });
-
-  resultado.innerText = `Colaborador: ${data[0].nome} | Saldo: ${formatarHora(saldoMin/60)}`;
+  resultado.innerText = `Colaborador: ${data[0].nome} | Saldo: ${Math.floor(saldo)}:${Math.round((saldo-Math.floor(saldo))*60).toString().padStart(2,'0')} horas`;
 }
 
+// CARREGAR TABELA
 async function carregar(){
   const { data } = await supabase.from("banco_horas").select("*").order("data",{ascending:true});
   lista.innerHTML="";
   let saldos={};
-
-  data.forEach(r=>{
+  data.forEach((r,index)=>{
     if(!saldos[r.nome]) saldos[r.nome]=0;
-    saldos[r.nome]+= r.tipo==="Crédito"? r.horas*60 : -r.horas*60;
+
+    if(r.tipo==="Crédito"){
+      if(r.horas.includes(":")){
+        let [h,m] = r.horas.split(":").map(Number);
+        saldos[r.nome] += h + m/60;
+      } else {
+        saldos[r.nome] += Number(r.horas);
+      }
+    } else {
+      saldos[r.nome] -= Number(r.horas);
+    }
+
+    let horasDisplay = r.tipo==="Crédito" && r.horas.includes(":") ? r.horas : r.horas.toString().padStart(2,'0') + ":00";
+    let saldoDisplay = `${Math.floor(saldos[r.nome])}:${Math.round((saldos[r.nome]-Math.floor(saldos[r.nome]))*60).toString().padStart(2,'0')}`;
 
     lista.innerHTML+=`
     <tr>
       <td>${r.nome}</td><td>${r.tipo}</td><td>${r.data}</td>
       <td>${r.entrada||''}</td><td>${r.saida||''}</td>
-      <td>${formatarHora(r.horas)}</td>
-      <td>${formatarHora(saldos[r.nome]/60)}</td>
-      <td>${r.motivo}</td>
+      <td>${horasDisplay}</td><td>${saldoDisplay}</td><td>${r.motivo}</td>
     </tr>`;
   });
 }
 
+// VOLTAR PARA CONSULTA
 window.voltarConsulta = function(){
   app.classList.add('hidden');        
   loginBox.classList.add('hidden');   
   consultaBox.classList.remove('hidden'); 
 }
 
+// GERAR PDF PROFISSIONAL
 window.gerarPDF = async () => {
-  const nomeBusca = pdfNome.value.trim();
-  if(!nomeBusca) return alert("Digite o nome do colaborador");
-
-  const { data } = await supabase
-    .from("banco_horas")
-    .select("*")
-    .ilike("nome", `%${nomeBusca}%`)
-    .order("data",{ascending:true});
-
-  if(!data || data.length===0){
-    alert("Nenhum registro encontrado para este colaborador.");
-    return;
-  }
+  const colaborador=document.getElementById("pdfNome").value.trim();
+  if(!colaborador) return alert("Digite o nome do colaborador");
+  const { data, error } = await supabase.from("banco_horas")
+    .select("*").ilike("nome", `%${colaborador}%`).order("data",{ascending:true});
+  if(error || !data || data.length===0) return alert("Nenhum registro encontrado");
 
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
+  const doc = new jsPDF({unit:'pt', format:'a4'});
+  const margin=40, pageWidth=595, rowHeight=20;
+  let y=margin;
 
-  let y = 10;
-  doc.setFontSize(12);
-  doc.text(`Banco de Horas - ${data[0].nome}`, 10, y);
-  y += 10;
+  // Cabeçalho
+  doc.setFillColor(30,126,52);
+  doc.rect(0,0,pageWidth,50,'F');
+  doc.setFontSize(20); doc.setTextColor(255,255,255);
+  doc.text("Relatório de Banco de Horas", pageWidth/2,30,{align:"center"});
 
-  let saldoMin = 0;
+  // Info colaborador
+  doc.setFontSize(12); doc.setTextColor(0,0,0);
+  y+=60; doc.text(`Colaborador: ${data[0].nome}`, margin, y); y+=25;
 
-  data.forEach(r => {
-    saldoMin += r.tipo === "Crédito" ? r.horas*60 : -r.horas*60;
+  // Cabeçalho tabela
+  const headers=["Data","Tipo","Entrada","Saída","Horas","Saldo","Motivo"];
+  const colX=[margin,110,180,250,320,380,450];
+  doc.setFontSize(10); doc.setFillColor(200,200,200);
+  doc.rect(margin-2,y-rowHeight+4,pageWidth-margin*2+4,rowHeight,'F');
+  headers.forEach((h,i)=>doc.text(h,colX[i],y));
+  y+=rowHeight;
 
-    const linha = [
-      r.data,
-      r.tipo,
-      r.entrada || "",
-      r.saida || "",
-      formatarHora(r.horas),
-      formatarHora(saldoMin/60),
-      r.motivo || ""
-    ].join(" | ");
-
-    if(y > 280){
-      doc.addPage();
-      y = 10;
+  // Dados tabela
+  let saldoAcumulado=0;
+  data.forEach((r,index)=>{
+    if(y>750){ doc.addPage(); y=margin+20; }
+    if(r.tipo==="Crédito"){
+      if(r.horas.includes(":")){
+        let [h,m] = r.horas.split(":").map(Number);
+        saldoAcumulado += h + m/60;
+      } else {
+        saldoAcumulado += Number(r.horas);
+      }
+    } else {
+      saldoAcumulado -= Number(r.horas);
     }
 
-    doc.setFontSize(9);
-    doc.text(linha, 10, y);
-    y += 6;
+    let horasDisplay = r.tipo==="Crédito" && r.horas.includes(":") ? r.horas : r.horas.toString().padStart(2,'0') + ":00";
+    let saldoDisplay = `${Math.floor(saldoAcumulado)}:${Math.round((saldoAcumulado-Math.floor(saldoAcumulado))*60).toString().padStart(2,'0')}`;
+
+    doc.setFillColor(index%2===0?245:255, index%2===0?245:255, index%2===0?245:255);
+    doc.rect(margin-2,y-rowHeight+4,pageWidth-margin*2+4,rowHeight,'F');
+    const row=[r.data,r.tipo,r.entrada||'',r.saida||'',horasDisplay,saldoDisplay,r.motivo||''];
+    row.forEach((txt,i)=>doc.text(txt.toString(),colX[i],y));
+    y+=rowHeight;
   });
 
-  doc.save(`Banco_Horas_${data[0].nome}.pdf`);
-};
+  y+=10;
+  doc.setFontSize(12); doc.setTextColor(30,126,52);
+  doc.text(`Saldo Total: ${Math.floor(saldoAcumulado)}:${Math.round((saldoAcumulado-Math.floor(saldoAcumulado))*60).toString().padStart(2,'0')} horas`, margin, y);
+
+  doc.save(`${colaborador}_BancoHoras.pdf`);
+}
 </script>
 
 </body>
