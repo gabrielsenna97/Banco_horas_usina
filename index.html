@@ -151,16 +151,12 @@ window.login = async () => {
   carregar();
 }
 
-function calcularMinutos(entrada, saida){
-  const inicio = new Date(`1970-01-01T${entrada}`);
-  const fim = new Date(`1970-01-01T${saida}`);
-  let diff = fim - inicio;
-  if(diff < 0) diff += 24 * 60 * 60 * 1000;
-  return Math.floor(diff / 60000);
-}
-
-function minutosParaDecimal(min){
-  return min / 60;
+// ✅ FUNÇÃO PARA FORMATAR EM HH:MM
+function formatarHora(decimal){
+  const totalMin = Math.round(decimal * 60);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
 
 async function mostrarSaldo(nomeBusca){
@@ -175,7 +171,7 @@ async function mostrarSaldo(nomeBusca){
   });
 
   saldoAtual.innerText =
-  `${data[0].nome} | Saldo atual do colaborador: ${(saldoMin/60).toFixed(2)} horas`;
+  `${data[0].nome} | Saldo atual do colaborador: ${formatarHora(saldoMin/60)}`;
 
   return saldoMin/60;
 }
@@ -186,9 +182,8 @@ window.salvar = async () => {
   let horas=0, entradaVal=entrada.value||null, saidaVal=saida.value||null;
 
   if(tipo.value==="Crédito"){
-    const minutos = calcularMinutos(entrada.value, saida.value);
-    if(minutos<=0) return alert("Digite horários válidos para Crédito");
-    horas = minutosParaDecimal(minutos);
+    horas=(new Date(`1970-01-01T${saida.value}`)-new Date(`1970-01-01T${entrada.value}`))/3600000;
+    if(horas<=0) return alert("Digite horários válidos para Crédito");
   } else {
     horas=parseFloat(horasDebito.value);
     if(isNaN(horas) || horas<=0) return alert("Digite uma quantidade válida de horas para Débito");
@@ -200,7 +195,7 @@ window.salvar = async () => {
   await supabase.from("banco_horas").insert([{
     nome:nome.value.trim(), tipo:tipo.value, data:data.value,
     entrada:entradaVal, saida:saidaVal,
-    horas:Number(horas.toFixed(4)), motivo:motivo.value.trim()
+    horas:Number(horas.toFixed(2)), motivo:motivo.value.trim()
   }]);
 
   carregar();
@@ -220,7 +215,7 @@ window.consultar = async () => {
     saldoMin += r.tipo==="Crédito" ? r.horas*60 : -r.horas*60;
   });
 
-  resultado.innerText = `Colaborador: ${data[0].nome} | Saldo: ${(saldoMin/60).toFixed(2)} horas`;
+  resultado.innerText = `Colaborador: ${data[0].nome} | Saldo: ${formatarHora(saldoMin/60)}`;
 }
 
 async function carregar(){
@@ -236,7 +231,9 @@ async function carregar(){
     <tr>
       <td>${r.nome}</td><td>${r.tipo}</td><td>${r.data}</td>
       <td>${r.entrada||''}</td><td>${r.saida||''}</td>
-      <td>${r.horas}</td><td>${(saldos[r.nome]/60).toFixed(2)}</td><td>${r.motivo}</td>
+      <td>${formatarHora(r.horas)}</td>
+      <td>${formatarHora(saldos[r.nome]/60)}</td>
+      <td>${r.motivo}</td>
     </tr>`;
   });
 }
