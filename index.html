@@ -212,63 +212,56 @@ tipo.addEventListener("change", async () => {
   if(nome.value.trim()!=="") await mostrarSaldo(nome.value.trim());
 });
 
+// FUNÇÃO AUXILIAR PARA CONVERTER HORAS DECIMAIS EM HH:MM
+function decimalParaHHMM(decimal){
+  const totalMinutos=Math.round(decimal*60);
+  const h=Math.floor(totalMinutos/60).toString().padStart(2,'0');
+  const m=(totalMinutos%60).toString().padStart(2,'0');
+  return `${h}:${m}`;
+}
+
+// FUNÇÃO SALDO EM HH:MM
+function saldoEmHHMM(saldoDecimal){
+  return decimalParaHHMM(saldoDecimal);
+}
+
 // MOSTRAR SALDO AO DIGITAR NOME
 nome.addEventListener("input", async () => {
   if(nome.value.trim()!=="") await mostrarSaldo(nome.value.trim());
   else saldoAtual.innerText = "";
 });
 
-// FUNÇÃO PARA CALCULAR HORAS EM HH:MM
-function calcularHoras(entrada, saida){
-  const diff = (new Date(`1970-01-01T${saida}`) - new Date(`1970-01-01T${entrada}`)) / 1000; // segundos
-  const horas = Math.floor(diff / 3600);
-  const minutos = Math.floor((diff % 3600) / 60);
-  return `${String(horas).padStart(2,'0')}:${String(minutos).padStart(2,'0')}`;
-}
-
 // FUNÇÃO SALDO
 async function mostrarSaldo(nomeBusca){
   const { data, error } = await supabase.from("banco_horas")
     .select("*").ilike("nome", `%${nomeBusca}%`);
   if(error || !data || data.length===0){ saldoAtual.innerText="Nenhum registro encontrado"; return 0; }
-  let saldoSegundos=0;
-  data.forEach(r=>{
-    const [h,m] = r.horas.split(':').map(Number);
-    saldoSegundos += r.tipo==="Crédito"? (h*3600 + m*60) : -(h*3600 + m*60);
-  });
-  const saldoHoras = Math.floor(saldoSegundos/3600);
-  const saldoMinutos = Math.floor((saldoSegundos%3600)/60);
-  saldoAtual.innerText = `${data[0].nome} | Saldo atual do colaborador: ${String(saldoHoras).padStart(2,'0')}:${String(saldoMinutos).padStart(2,'0')}`;
-  return saldoSegundos;
+  let saldo=0;
+  data.forEach(r=>{ saldo += r.tipo==="Crédito"?Number(r.horas):-Number(r.horas); });
+  saldoAtual.innerText = `${data[0].nome} | Saldo atual do colaborador: ${saldoEmHHMM(saldo)}`;
+  return saldo;
 }
 
 // SALVAR
 window.salvar = async () => {
   if(!nome.value.trim()) return alert("Digite o nome do colaborador");
-
-  let horasVal="", entradaVal=entrada.value||null, saidaVal=saida.value||null;
+  let horas=0, entradaVal=entrada.value||null, saidaVal=saida.value||null;
   if(tipo.value==="Crédito"){
-    if(!entrada.value || !saida.value) return alert("Digite entrada e saída válidas");
-    horasVal = calcularHoras(entrada.value, saida.value);
+    const diffMs=new Date(`1970-01-01T${saida.value}`)-new Date(`1970-01-01T${entrada.value}`);
+    if(diffMs<=0) return alert("Digite horários válidos para Crédito");
+    horas = diffMs/3600000; // horas em decimal
+    horas = Number((Math.floor(diffMs/60000)/60).toFixed(2)); // arredonda para minutos reais
   } else {
-    if(!horasDebito.value) return alert("Digite quantidade de horas para débito");
-    const [h,m] = horasDebito.value.split(':').map(Number);
-    if(isNaN(h)) return alert("Horas inválidas");
-    horasVal = `${String(h).padStart(2,'0')}:${String(m||0).padStart(2,'0')}`;
-    const saldoAtualCalc = await mostrarSaldo(nome.value.trim());
-    const totalSegundosDebito = h*3600 + (m||0)*60;
-    if(totalSegundosDebito > saldoAtualCalc) return alert("Saldo insuficiente!");
+    horas=parseFloat(horasDebito.value);
+    if(isNaN(horas) || horas<=0) return alert("Digite uma quantidade válida de horas para Débito");
+    const saldoAtualCalc=await mostrarSaldo(nome.value.trim());
+    if(horas>saldoAtualCalc) return alert(`Saldo insuficiente! O colaborador tem apenas ${saldoAtualCalc.toFixed(2)} horas.`);
     entradaVal=null; saidaVal=null;
   }
-
   await supabase.from("banco_horas").insert([{
-    nome:nome.value.trim(),
-    tipo:tipo.value,
-    data:data.value,
-    entrada:entradaVal,
-    saida:saidaVal,
-    horas:horasVal,
-    motivo:motivo.value.trim()
+    nome:nome.value.trim(), tipo:tipo.value, data:data.value,
+    entrada:entradaVal, saida:saidaVal,
+    horas:Number(horas.toFixed(2)), motivo:motivo.value.trim()
   }]);
   carregar(); horasDebito.value=""; saldoAtual.innerText="";
 }
@@ -281,35 +274,24 @@ window.consultar = async () => {
     .select("*").ilike("nome", `%${nomeBusca}%`);
   if(error){ alert("Erro na consulta"); console.log(error); return; }
   if(!data || data.length===0){ resultado.innerText="Nenhum registro encontrado."; return; }
-  let saldoSegundos=0;
-  data.forEach(r=>{
-    const [h,m] = r.horas.split(':').map(Number);
-    saldoSegundos += r.tipo==="Crédito"? (h*3600 + m*60) : -(h*3600 + m*60);
-  });
-  const saldoHoras = Math.floor(saldoSegundos/3600);
-  const saldoMinutos = Math.floor((saldoSegundos%3600)/60);
-  resultado.innerText = `Colaborador: ${data[0].nome} | Saldo: ${String(saldoHoras).padStart(2,'0')}:${String(saldoMinutos).padStart(2,'0')}`;
+  let saldo=0; data.forEach(r=>{ saldo += r.tipo==="Crédito"?Number(r.horas):-Number(r.horas); });
+  resultado.innerText = `Colaborador: ${data[0].nome} | Saldo: ${saldoEmHHMM(saldo)}`;
 }
 
 // CARREGAR TABELA
 async function carregar(){
   const { data } = await supabase.from("banco_horas").select("*").order("data",{ascending:true});
   lista.innerHTML="";
-  let saldosSegundos={};
+  let saldos={};
   data.forEach(r=>{
-    if(!saldosSegundos[r.nome]) saldosSegundos[r.nome]=0;
-    const [h,m] = r.horas.split(':').map(Number);
-    const totalSegundos = h*3600 + (m||0)*60;
-    saldosSegundos[r.nome] += r.tipo==="Crédito"?totalSegundos:-totalSegundos;
-    const saldoHoras = Math.floor(saldosSegundos[r.nome]/3600);
-    const saldoMinutos = Math.floor((saldosSegundos[r.nome]%3600)/60);
-    lista.innerHTML += `
-      <tr>
-        <td>${r.nome}</td><td>${r.tipo}</td><td>${r.data}</td>
-        <td>${r.entrada||''}</td><td>${r.saida||''}</td>
-        <td>${r.horas}</td><td>${String(saldoHoras).padStart(2,'0')}:${String(saldoMinutos).padStart(2,'0')}</td><td>${r.motivo}</td>
-      </tr>
-    `;
+    if(!saldos[r.nome]) saldos[r.nome]=0;
+    saldos[r.nome]+= r.tipo==="Crédito"?r.horas:-r.horas;
+    lista.innerHTML+=`
+    <tr>
+      <td>${r.nome}</td><td>${r.tipo}</td><td>${r.data}</td>
+      <td>${r.entrada||''}</td><td>${r.saida||''}</td>
+      <td>${decimalParaHHMM(r.horas)}</td><td>${decimalParaHHMM(saldos[r.nome])}</td><td>${r.motivo}</td>
+    </tr>`;
   });
 }
 
@@ -352,28 +334,20 @@ window.gerarPDF = async () => {
   y+=rowHeight;
 
   // Dados tabela
-  let saldoAcumuladoSegundos=0;
+  let saldoAcumulado=0;
   data.forEach((r,index)=>{
     if(y>750){ doc.addPage(); y=margin+20; }
-    const [h,m] = r.horas.split(':').map(Number);
-    const totalSegundos = h*3600 + (m||0)*60;
-    saldoAcumuladoSegundos += r.tipo==="Crédito"?totalSegundos:-totalSegundos;
-    const saldoHoras = Math.floor(saldoAcumuladoSegundos/3600);
-    const saldoMinutos = Math.floor((saldoAcumuladoSegundos%3600)/60);
-
+    saldoAcumulado += r.tipo==="Crédito"?r.horas:-r.horas;
     doc.setFillColor(index%2===0?245:255, index%2===0?245:255, index%2===0?245:255);
     doc.rect(margin-2,y-rowHeight+4,pageWidth-margin*2+4,rowHeight,'F');
-
-    const row=[r.data,r.tipo,r.entrada||'',r.saida||'',r.horas,`${String(saldoHoras).padStart(2,'0')}:${String(saldoMinutos).padStart(2,'0')}`,r.motivo||''];
+    const row=[r.data,r.tipo,r.entrada||'',r.saida||'',decimalParaHHMM(r.horas),decimalParaHHMM(saldoAcumulado),r.motivo||''];
     row.forEach((txt,i)=>doc.text(txt.toString(),colX[i],y));
     y+=rowHeight;
   });
 
   y+=10;
-  const totalSaldoHoras = Math.floor(saldoAcumuladoSegundos/3600);
-  const totalSaldoMin = Math.floor((saldoAcumuladoSegundos%3600)/60);
   doc.setFontSize(12); doc.setTextColor(30,126,52);
-  doc.text(`Saldo Total: ${String(totalSaldoHoras).padStart(2,'0')}:${String(totalSaldoMin).padStart(2,'0')}`, margin, y);
+  doc.text(`Saldo Total: ${decimalParaHHMM(saldoAcumulado)}`, margin, y);
 
   doc.save(`${colaborador}_BancoHoras.pdf`);
 }
