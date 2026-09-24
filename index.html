@@ -1,654 +1,674 @@
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>UTE Maués - Capturador PIE</title>
+<title>UTE Maués - Gestão e Captura PIE</title>
 
 <style>
-
 *{
     box-sizing:border-box;
+    margin:0;
+    padding:0;
 }
 
 body{
-    margin:0;
     font-family:Arial,Helvetica,sans-serif;
-    background:#f1f3f5;
-    color:#222;
+    background:#f2f4f7;
+    color:#1f2937;
 }
 
-.topo{
-    background:#1f2937;
+header{
+    background:#111827;
     color:white;
-    padding:18px;
-    text-align:center;
+    padding:20px;
 }
 
-.topo h1{
-    margin:0;
-    font-size:23px;
+header h1{
+    font-size:22px;
 }
 
-.topo p{
-    margin:6px 0 0;
-    opacity:.85;
-    font-size:13px;
+header p{
+    margin-top:5px;
+    color:#d1d5db;
 }
 
 .container{
-    width:95%;
-    max-width:1300px;
-    margin:20px auto;
+    max-width:1400px;
+    margin:auto;
+    padding:20px;
 }
 
 .card{
     background:white;
-    border-radius:10px;
+    border-radius:12px;
     padding:18px;
+    margin-bottom:18px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+.card h2{
+    font-size:18px;
     margin-bottom:15px;
-    box-shadow:0 2px 10px rgba(0,0,0,.08);
 }
 
-h2{
-    margin-top:0;
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:12px;
 }
 
-.status{
-    padding:12px;
-    border-radius:7px;
-    background:#eef2f7;
-    border:1px solid #d5dce5;
-    margin-bottom:15px;
-    font-weight:bold;
+.stat{
+    background:#f9fafb;
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+    padding:15px;
 }
 
-.status.ativo{
-    background:#e8f7ed;
-    border-color:#198754;
-    color:#146c43;
-}
-
-.status.erro{
-    background:#fff0f0;
-    border-color:#dc3545;
-    color:#a71d2a;
-}
-
-.botoes{
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    margin:15px 0;
+.stat strong{
+    display:block;
+    font-size:25px;
+    margin-top:5px;
 }
 
 button{
-    border:none;
-    border-radius:7px;
+    border:0;
+    border-radius:8px;
     padding:11px 16px;
     cursor:pointer;
     font-weight:bold;
-    font-size:14px;
+    margin:4px;
+}
+
+.btn-primary{
+    background:#2563eb;
+    color:white;
+}
+
+.btn-success{
+    background:#16a34a;
+    color:white;
+}
+
+.btn-warning{
+    background:#f59e0b;
+    color:white;
+}
+
+.btn-danger{
+    background:#dc2626;
+    color:white;
+}
+
+.btn-dark{
+    background:#111827;
+    color:white;
 }
 
 button:hover{
     opacity:.9;
 }
 
-.btn-verde{
-    background:#168b45;
-    color:white;
-}
-
-.btn-azul{
-    background:#0d6efd;
-    color:white;
-}
-
-.btn-amarelo{
-    background:#f0ad00;
-    color:#111;
-}
-
-.btn-cinza{
-    background:#e5e7eb;
-    color:#222;
-}
-
-.btn-vermelho{
-    background:#dc3545;
-    color:white;
-}
-
-.btn-whatsapp{
-    background:#25d366;
-    color:white;
-}
-
-.campo{
-    margin-bottom:14px;
-}
-
-.campo label{
-    display:block;
-    font-weight:bold;
-    font-size:13px;
-    margin-bottom:5px;
-}
-
-input{
+input,textarea,select{
     width:100%;
-    padding:11px;
-    border:1px solid #ccc;
+    padding:10px;
+    border:1px solid #d1d5db;
     border-radius:7px;
-    font-size:14px;
-}
-
-.contador{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-    gap:10px;
-}
-
-.contador-item{
-    background:#f8f9fa;
-    border:1px solid #ddd;
-    border-radius:8px;
-    padding:15px;
-    text-align:center;
-}
-
-.contador-item strong{
-    display:block;
-    font-size:28px;
     margin-top:5px;
 }
 
-.tabela{
-    overflow:auto;
-    max-height:600px;
+textarea{
+    min-height:180px;
+    resize:vertical;
+}
+
+label{
+    font-weight:bold;
+    font-size:13px;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:12px;
+}
+
+.status{
+    padding:12px;
+    background:#eff6ff;
+    border-left:4px solid #2563eb;
+    border-radius:6px;
+    margin-bottom:15px;
+}
+
+.progress{
+    width:100%;
+    height:22px;
+    background:#e5e7eb;
+    border-radius:20px;
+    overflow:hidden;
+    margin-top:10px;
+}
+
+.progress-bar{
+    height:100%;
+    width:0%;
+    background:#2563eb;
+    color:white;
+    text-align:center;
+    line-height:22px;
+    font-size:12px;
+    font-weight:bold;
+}
+
+.table-wrap{
+    overflow-x:auto;
 }
 
 table{
     width:100%;
     border-collapse:collapse;
+    min-width:1000px;
 }
 
-th,
-td{
-    padding:9px;
-    border-bottom:1px solid #ddd;
+th,td{
+    padding:10px;
+    border-bottom:1px solid #e5e7eb;
     text-align:left;
     font-size:13px;
-    vertical-align:top;
 }
 
 th{
-    background:#f3f4f6;
-    position:sticky;
-    top:0;
-    z-index:2;
+    background:#111827;
+    color:white;
 }
 
-textarea{
+tr:hover{
+    background:#f9fafb;
+}
+
+.badge{
+    display:inline-block;
+    padding:5px 8px;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:bold;
+}
+
+.operando{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.restricao{
+    background:#fef3c7;
+    color:#92400e;
+}
+
+.manutencao{
+    background:#fed7aa;
+    color:#9a3412;
+}
+
+.indisponivel{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+.disponivel{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.6);
+    z-index:9999;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+.modal-content{
+    background:white;
     width:100%;
-    min-height:450px;
-    resize:vertical;
-    padding:12px;
-    border:1px solid #ccc;
-    border-radius:8px;
-    font-family:Arial;
-    font-size:14px;
-    line-height:1.45;
+    max-width:850px;
+    max-height:90vh;
+    overflow:auto;
+    border-radius:12px;
+    padding:20px;
 }
 
-.instrucoes{
-    background:#f8fafc;
-    border:1px solid #dbe3ec;
-    border-radius:8px;
-    padding:15px;
-    line-height:1.6;
-    font-size:14px;
+.modal-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:15px;
 }
 
-.vazio{
+.close{
+    font-size:25px;
+    cursor:pointer;
+}
+
+.empty{
     text-align:center;
     padding:30px;
-    color:#777;
+    color:#6b7280;
 }
 
-.codigo{
+.small{
+    font-size:12px;
+    color:#6b7280;
+}
+
+.copy-area{
+    margin-top:10px;
+}
+
+#mensagem{
+    position:fixed;
+    right:20px;
+    bottom:20px;
     background:#111827;
-    color:#e5e7eb;
-    padding:12px;
-    border-radius:7px;
-    overflow:auto;
-    font-size:11px;
-    white-space:pre-wrap;
-    word-break:break-all;
-    max-height:400px;
+    color:white;
+    padding:12px 16px;
+    border-radius:8px;
+    display:none;
+    z-index:10000;
 }
 
-@media(max-width:700px){
-
+@media(max-width:600px){
     .container{
-        width:98%;
+        padding:10px;
     }
 
-    .botoes{
-        flex-direction:column;
+    header{
+        padding:15px;
+    }
+
+    header h1{
+        font-size:18px;
     }
 
     button{
         width:100%;
+        margin:3px 0;
     }
-
 }
-
 </style>
-
 </head>
-
 
 <body>
 
-
-<header class="topo">
-
-<h1>UTE MAUÉS</h1>
-
-<p>
-Capturador automático — PIE / Informações Diárias
-</p>
-
+<header>
+    <h1>UTE MAUÉS</h1>
+    <p>Gestão Diária • Captura PIE • Relatório Operacional</p>
 </header>
 
+<div class="container">
 
-<main class="container">
+    <!-- STATUS -->
+    <div class="card">
+        <div id="status" class="status">
+            Sistema carregado. Aguardando captura.
+        </div>
 
+        <div class="grid">
 
-<!-- =====================================================
-CONEXÃO
-===================================================== -->
+            <div class="stat">
+                Total de UGDs
+                <strong id="totalUGD">0</strong>
+            </div>
 
-<section class="card">
+            <div class="stat">
+                Disponíveis
+                <strong id="totalDisponiveis">0</strong>
+            </div>
 
-<h2>🔗 Conexão com o PIE</h2>
+            <div class="stat">
+                Operando
+                <strong id="totalOperando">0</strong>
+            </div>
 
-<div
-id="status"
-class="status"
->
-🟢 Sistema pronto.
-</div>
+            <div class="stat">
+                Restrição
+                <strong id="totalRestricao">0</strong>
+            </div>
 
+            <div class="stat">
+                Manutenção
+                <strong id="totalManutencao">0</strong>
+            </div>
 
-<div class="campo">
+            <div class="stat">
+                Indisponíveis
+                <strong id="totalIndisponivel">0</strong>
+            </div>
 
-<label>
-Endereço do PIE
-</label>
+        </div>
+    </div>
 
-<input
-id="urlPIE"
-value="http://sankhya.oliveiraenergia.com.br:8180/mge/system.jsp#app/YnIuY29tLnNhbmtoeWEubWVudS5hZGljaW9uYWwuQURfSU5GSE9SQVJJQQ=="
->
 
-</div>
+    <!-- CAPTURA -->
+    <div class="card">
 
+        <h2>📥 Captura Automática do PIE</h2>
 
-<div class="botoes">
+        <p class="small">
+            Use esta área para receber os dados capturados da tela do PIE.
+        </p>
 
-<button
-class="btn-verde"
-onclick="abrirPIE()"
->
-🚀 ABRIR PIE
-</button>
+        <br>
 
-<button
-class="btn-azul"
-onclick="copiarCapturador()"
->
-📋 COPIAR CAPTURADOR
-</button>
+        <button class="btn-primary" onclick="capturarAtual()">
+            📥 LER UGD ATUAL
+        </button>
 
-<button
-class="btn-amarelo"
-onclick="mostrarInstrucoes()"
->
-⚙️ COMO ATIVAR
-</button>
+        <button class="btn-success" onclick="abrirCapturaAutomatica()">
+            🔄 CAPTURAR TODAS AS UGDs
+        </button>
 
-</div>
+        <button class="btn-dark" onclick="limparTudo()">
+            🗑️ LIMPAR DADOS
+        </button>
 
+        <div style="margin-top:15px">
 
-<div
-id="instrucoes"
-class="instrucoes"
->
+            <strong id="progressoTexto">
+                Progresso: 0 / 60
+            </strong>
 
-<strong>FLUXO DO SISTEMA</strong>
+            <div class="progress">
+                <div id="progressBar" class="progress-bar">
+                    0%
+                </div>
+            </div>
 
-<br><br>
+        </div>
 
-1. Clique em <strong>ABRIR PIE</strong>.
+    </div>
 
-<br>
 
-2. Entre no Sankhya normalmente.
+    <!-- CONTROLES -->
+    <div class="card">
 
-<br>
+        <h2>⚙️ Controle</h2>
 
-3. Abra o menu
-<strong>PIE – Informações Diárias</strong>.
+        <button class="btn-success" onclick="gerarRelatorio()">
+            📱 GERAR RELATÓRIO WHATSAPP
+        </button>
 
-<br>
+        <button class="btn-primary" onclick="copiarWhatsApp()">
+            📋 COPIAR PARA WHATSAPP
+        </button>
 
-4. Abra a primeira UGD.
+        <button class="btn-warning" onclick="exportarJSON()">
+            💾 EXPORTAR DADOS
+        </button>
 
-<br>
+        <button class="btn-dark" onclick="document.getElementById('arquivoImportar').click()">
+            📂 IMPORTAR DADOS
+        </button>
 
-5. Clique em
-<strong>COPIAR CAPTURADOR</strong>.
+        <input
+            type="file"
+            id="arquivoImportar"
+            accept=".json"
+            style="display:none"
+            onchange="importarJSON(event)"
+        >
 
-<br>
+    </div>
 
-6. O capturador deverá ser executado na página do PIE.
 
-<br>
+    <!-- TABELA -->
+    <div class="card">
 
-7. Depois clique na seta ➡️ para passar pelas UGDs.
+        <h2>📊 UGDs Capturadas</h2>
 
-<br>
+        <div class="table-wrap">
 
-8. O sistema captura os registros.
+            <table>
 
-<br>
+                <thead>
 
-9. Ao terminar, volte para esta página.
+                    <tr>
+                        <th>UGD</th>
+                        <th>Equipamento</th>
+                        <th>Data</th>
+                        <th>HRM</th>
+                        <th>Status</th>
+                        <th>OS</th>
+                        <th>Causa</th>
+                        <th>Ação</th>
+                    </tr>
 
-<br>
+                </thead>
 
-10. Clique em
-<strong>GERAR RELATÓRIO</strong>.
+                <tbody id="tabelaRegistros">
 
-</div>
+                </tbody>
 
-</section>
+            </table>
 
+        </div>
 
-<!-- =====================================================
-CONTADORES
-===================================================== -->
+    </div>
 
-<section class="card">
 
-<h2>📊 Resumo da Captura</h2>
+    <!-- RELATÓRIO -->
+    <div class="card">
 
-<div class="contador">
+        <h2>📱 Relatório para WhatsApp</h2>
 
+        <textarea id="relatorio"
+            placeholder="O relatório será gerado aqui..."></textarea>
 
-<div class="contador-item">
-
-UGDs Capturadas
-
-<strong id="totalUGD">
-0
-</strong>
-
-</div>
-
-
-<div class="contador-item">
-
-Disponíveis
-
-<strong id="totalDisponiveis">
-0
-</strong>
-
-</div>
-
-
-<div class="contador-item">
-
-Operando
-
-<strong id="totalOperando">
-0
-</strong>
-
-</div>
-
-
-<div class="contador-item">
-
-Restrição
-
-<strong id="totalRestricao">
-0
-</strong>
+    </div>
 
 </div>
 
 
-<div class="contador-item">
-
-Manutenção
-
-<strong id="totalManutencao">
-0
-</strong>
-
-</div>
+<!-- MENSAGEM -->
+<div id="mensagem"></div>
 
 
-<div class="contador-item">
+<!-- MODAL -->
+<div id="modalCaptura" class="modal">
 
-Indisponíveis
+    <div class="modal-content">
 
-<strong id="totalIndisponivel">
-0
-</strong>
+        <div class="modal-header">
 
-</div>
+            <h2>📥 Capturar UGD</h2>
 
+            <span
+                class="close"
+                onclick="fecharModal()">
+                ×
+            </span>
 
-</div>
-
-</section>
-
-
-<!-- =====================================================
-REGISTROS
-===================================================== -->
-
-<section class="card">
-
-<h2>📋 Registros Capturados</h2>
+        </div>
 
 
-<div class="botoes">
+        <div class="form-grid">
 
-<button
-class="btn-verde"
-onclick="gerarRelatorio()"
->
-📊 GERAR RELATÓRIO
-</button>
+            <div>
+                <label>UGD</label>
+                <input id="campoUGD" placeholder="UGD-01">
+            </div>
 
+            <div>
+                <label>Equipamento</label>
+                <input id="campoEquipamento">
+            </div>
 
-<button
-class="btn-whatsapp"
-onclick="copiarWhatsApp()"
->
-📱 COPIAR WHATSAPP
-</button>
+            <div>
+                <label>Data</label>
+                <input id="campoData" type="date">
+            </div>
 
+            <div>
+                <label>HRM</label>
+                <input id="campoHRM">
+            </div>
 
-<button
-class="btn-azul"
-onclick="exportarJSON()"
->
-💾 EXPORTAR
-</button>
+            <div>
+                <label>Status</label>
+                <input id="campoStatus">
+            </div>
 
+            <div>
+                <label>OS</label>
+                <input id="campoOS">
+            </div>
 
-<button
-class="btn-vermelho"
-onclick="limparTudo()"
->
-🗑 LIMPAR
-</button>
+            <div>
+                <label>Causa</label>
+                <textarea id="campoCausa"></textarea>
+            </div>
 
-</div>
+            <div>
+                <label>Ocorrências</label>
+                <textarea id="campoOcorrencias"></textarea>
+            </div>
 
+            <div>
+                <label>Ação</label>
+                <textarea id="campoAcao"></textarea>
+            </div>
 
-<div class="tabela">
+            <div>
+                <label>Previsão de retorno</label>
+                <input id="campoPrevisao">
+            </div>
 
-<table>
+        </div>
 
-<thead>
+        <br>
 
-<tr>
+        <button
+            class="btn-success"
+            onclick="salvarCaptura()">
+            💾 SALVAR UGD
+        </button>
 
-<th>UGD</th>
+        <button
+            class="btn-danger"
+            onclick="fecharModal()">
+            CANCELAR
+        </button>
 
-<th>Equipamento</th>
-
-<th>Data</th>
-
-<th>HRM</th>
-
-<th>Status</th>
-
-<th>OS</th>
-
-<th>Causa</th>
-
-<th>Ocorrências</th>
-
-<th>Ação</th>
-
-</tr>
-
-</thead>
-
-
-<tbody id="tabelaRegistros">
-
-</tbody>
-
-</table>
+    </div>
 
 </div>
-
-</section>
-
-
-<!-- =====================================================
-RELATÓRIO
-===================================================== -->
-
-<section class="card">
-
-<h2>
-📱 Relatório para WhatsApp
-</h2>
-
-
-<textarea
-id="relatorio"
-placeholder="Clique em GERAR RELATÓRIO..."
-></textarea>
-
-
-<div class="botoes">
-
-<button
-class="btn-whatsapp"
-onclick="copiarWhatsApp()"
->
-📋 COPIAR RELATÓRIO
-</button>
-
-</div>
-
-</section>
-
-
-<!-- =====================================================
-CAPTURADOR
-===================================================== -->
-
-<section class="card">
-
-<h2>
-⚙️ Código do Capturador PIE
-</h2>
-
-<div class="instrucoes">
-
-Este é o código que lê a tela do PIE.
-
-Ele procura automaticamente:
-
-<br><br>
-
-<strong>UGD</strong><br>
-<strong>IDENTIFICAÇÃO GG</strong><br>
-<strong>HORÍMETRO</strong><br>
-<strong>STATUS OPERAÇÃO</strong><br>
-<strong>NUM. OS</strong><br>
-<strong>CAUSA</strong><br>
-<strong>OCORRÊNCIAS</strong><br>
-<strong>AÇÃO</strong><br>
-<strong>PREVISÃO DE RETORNO</strong><br>
-<strong>HORAS</strong>
-
-<br><br>
-
-Também remove os acréscimos encontrados no HRM.
-
-</div>
-
-
-<br>
-
-<div
-id="codigoCapturador"
-class="codigo"
-></div>
-
-</section>
-
-
-</main>
 
 
 <script>
 
-
 /* ==========================================================
-CONFIGURAÇÃO
+   CONFIGURAÇÃO
 ========================================================== */
 
-const STORAGE_KEY =
-"UTE_MAUES_PIE_HTML_V2";
-
+const STORAGE_KEY = "UTE_MAUES_PIE_HTML";
 
 let registros = [];
 
-let janelaPIE = null;
+let capturandoTodas = false;
 
 
 /* ==========================================================
-CARREGAR
+   CADASTRO DAS 60 UGDs
+========================================================== */
+
+const equipamentos = {
+
+"UGD-01":"UTE 550 0024R",
+"UGD-02":"UTE 550 0028R",
+"UGD-03":"UTE 550 0562",
+"UGD-04":"UTE 550 0589",
+"UGD-05":"UTE 550 0184",
+"UGD-06":"UTE 550 0597",
+"UGD-07":"UTE 550 0142",
+"UGD-08":"UTE 550 0590",
+"UGD-09":"UTE 550 0565",
+"UGD-10":"UTE 550 0176",
+"UGD-11":"UTE 550 0591",
+"UGD-12":"UTE 550 0598",
+"UGD-13":"UTE 550 0566",
+"UGD-14":"UTE 550 0027R",
+"UGD-15":"UTE 550 0476",
+"UGD-16":"UTE 550 0471",
+"UGD-17":"UTE 550 0601",
+"UGD-18":"UTE 550 0305",
+"UGD-19":"UTE 550 0592",
+"UGD-20":"UTE 550 0599",
+"UGD-21":"UTE 550 0593",
+"UGD-22":"UTE 550 0125R1",
+"UGD-23":"UTE 550 0581",
+"UGD-24":"UTE 550 0600",
+"UGD-25":"UTE 550 0302R1",
+"UGD-26":"UTE 360 0015",
+"UGD-27":"UTE 550 0366",
+"UGD-28":"UTE 550 0594",
+"UGD-29":"UTE 550 0241R",
+"UGD-30":"UTE 550 0320R",
+"UGD-31":"UTE 550 0367",
+"UGD-32":"UTE 550 0344R",
+"UGD-33":"UTE 550 0482",
+"UGD-34":"UTE 550 0299R",
+"UGD-35":"UTE 550 0563",
+"UGD-36":"UTE 550 0596",
+"UGD-37":"UTE 550 0251R",
+"UGD-38":"UTE 550 0582",
+"UGD-39":"UTE 550 0025R",
+"UGD-40":"UTE 625 0038",
+"UGD-41":"UTE 550 0517",
+"UGD-42":"UTE 550 0514",
+"UGD-43":"UTE 550 0518",
+"UGD-44":"UTE 550 0609R",
+"UGD-45":"UTE 550 0104R",
+"UGD-46":"UTE 550 0321R",
+"UGD-47":"UTE 550 0602",
+"UGD-48":"UTE 550 0515",
+"UGD-49":"UTE 625 0019",
+"UGD-50":"UTE 550 0297R",
+"UGD-51":"UTE 625 0017",
+"UGD-52":"UTE 550 0038R",
+"UGD-53":"UTE 550 0715",
+"UGD-54":"UTE 550 0583",
+"UGD-55":"DIY-C1720 1808201",
+"UGD-56":"DIY-C1720 1808203",
+"UGD-57":"DIY-C1720 1808198",
+"UGD-58":"DIY-C1720 1808199",
+"UGD-59":"DIY-C1720 1808205",
+"UGD-60":"DIY-C1720 1808200"
+
+};
+
+
+/* ==========================================================
+   INICIALIZAÇÃO
+========================================================== */
+
+window.onload = function(){
+
+    carregarDados();
+
+    atualizarTela();
+
+    gerarRelatorio();
+
+};
+
+
+/* ==========================================================
+   LOCAL STORAGE
 ========================================================== */
 
 function carregarDados(){
@@ -656,287 +676,589 @@ function carregarDados(){
     try{
 
         const dados =
-        localStorage.getItem(
-            STORAGE_KEY
-        );
+            localStorage.getItem(STORAGE_KEY);
 
         if(dados){
 
             registros =
-            JSON.parse(dados);
+                JSON.parse(dados);
 
         }
 
     }catch(e){
 
-        registros=[];
-
-    }
-
-    if(!Array.isArray(registros)){
-
-        registros=[];
+        registros = [];
 
     }
 
 }
 
-
-/* ==========================================================
-SALVAR
-========================================================== */
 
 function salvarDados(){
 
     localStorage.setItem(
-
         STORAGE_KEY,
-
-        JSON.stringify(
-            registros
-        )
-
+        JSON.stringify(registros)
     );
 
 }
 
 
 /* ==========================================================
-MENSAGEM
+   MENSAGEM
 ========================================================== */
 
-function mensagem(
-    texto,
-    tipo=""
-){
+function mensagem(texto){
 
-    const box =
-    document.getElementById(
-        "status"
-    );
+    const el =
+        document.getElementById("mensagem");
 
-    box.textContent =
-    texto;
+    el.textContent = texto;
 
-    box.className =
-    "status";
+    el.style.display = "block";
 
-    if(tipo){
+    setTimeout(function(){
 
-        box.classList.add(
-            tipo
-        );
+        el.style.display = "none";
 
-    }
+    },2500);
 
 }
 
 
 /* ==========================================================
-ABRIR PIE
+   LIMPAR HRM
 ========================================================== */
 
-function abrirPIE(){
+function limparHRM(valor){
 
-    const url =
-    document
-    .getElementById(
-        "urlPIE"
-    )
-    .value
-    .trim();
+    if(!valor) return "";
+
+    let v =
+        String(valor)
+        .replace(/acréscimos?/gi,"")
+        .replace(/acrescimos?/gi,"")
+        .replace(/HRM/gi,"")
+        .replace(/:/g,"")
+        .trim();
+
+    v = v.replace(/[^\d.,]/g,"");
+
+    v = v.replace(/\./g,"");
+
+    v = v.replace(",", ".");
+
+    return v;
+
+}
 
 
-    if(!url){
+/* ==========================================================
+   CAPTURAR ATUAL
+========================================================== */
 
-        alert(
-            "Endereço do PIE não informado."
-        );
+function capturarAtual(){
+
+    abrirModal();
+
+}
+
+
+/* ==========================================================
+   MODAL
+========================================================== */
+
+function abrirModal(){
+
+    document.getElementById("modalCaptura")
+        .style.display = "flex";
+
+}
+
+
+function fecharModal(){
+
+    document.getElementById("modalCaptura")
+        .style.display = "none";
+
+}
+
+
+/* ==========================================================
+   SALVAR CAPTURA
+========================================================== */
+
+function salvarCaptura(){
+
+    const ugd =
+        document.getElementById("campoUGD").value.trim();
+
+    if(!ugd){
+
+        mensagem("Informe a UGD.");
 
         return;
 
     }
 
+    const registro = {
 
-    janelaPIE =
-    window.open(
-        url,
-        "PIE_UTE_MAUES"
-    );
+        ugd: ugd,
 
+        equipamento:
+            document.getElementById("campoEquipamento").value.trim()
+            || equipamentos[ugd]
+            || "",
 
-    if(!janelaPIE){
+        data:
+            document.getElementById("campoData").value,
 
-        alert(
-            "O navegador bloqueou a janela do Sankhya.\n\n" +
-            "Permita pop-ups para este site."
-        );
+        hrm:
+            limparHRM(
+                document.getElementById("campoHRM").value
+            ),
 
-        return;
+        status:
+            document.getElementById("campoStatus").value.trim(),
 
-    }
+        os:
+            document.getElementById("campoOS").value.trim(),
 
+        causa:
+            document.getElementById("campoCausa").value.trim(),
 
-    mensagem(
-        "🟢 PIE aberto. Entre no Sankhya e abra as Informações Diárias.",
-        "ativo"
-    );
+        ocorrencias:
+            document.getElementById("campoOcorrencias").value.trim(),
 
-}
+        acao:
+            document.getElementById("campoAcao").value.trim(),
 
+        previsao:
+            document.getElementById("campoPrevisao").value.trim(),
 
-/* ==========================================================
-RECEBER DO PIE
-========================================================== */
+        atualizado:
+            new Date().toISOString()
 
-window.addEventListener(
-    "message",
-    function(event){
-
-        if(
-            !event.data ||
-            event.data.tipo !==
-            "UTE_MAUES_PIE_REGISTRO"
-        ){
-
-            return;
-
-        }
-
-
-        const registro =
-        event.data.registro;
-
-
-        if(!registro){
-
-            return;
-
-        }
-
-
-        salvarRegistro(
-            registro
-        );
-
-    }
-);
-
-
-/* ==========================================================
-LIMPAR HRM
-========================================================== */
-
-function limparHRM(
-    valor
-){
-
-    let texto =
-    String(
-        valor || ""
-    );
-
-
-    texto =
-    texto.replace(
-        /\(\s*\+\s*[\d.,]+\s*\)/g,
-        ""
-    );
-
-
-    texto =
-    texto.replace(
-        /\s*\+\s*[\d.,]+/g,
-        ""
-    );
-
-
-    return texto.trim();
-
-}
-
-
-/* ==========================================================
-SALVAR REGISTRO
-========================================================== */
-
-function salvarRegistro(
-    registro
-){
-
-    if(
-        !registro.ugd &&
-        !registro.equipamento
-    ){
-
-        return;
-
-    }
-
-
-    registro.hrm =
-    limparHRM(
-        registro.hrm
-    );
+    };
 
 
     const indice =
-    registros.findIndex(
-        r =>
-        r.ugd &&
-        registro.ugd &&
-        r.ugd ===
-        registro.ugd
-    );
+        registros.findIndex(
+            r => r.ugd === ugd
+        );
 
 
     if(indice >= 0){
 
-        registros[indice] =
-        {
+        registros[indice] = registro;
+
+    }else{
+
+        registros.push(registro);
+
+    }
+
+
+    registros.sort(
+        (a,b) =>
+            numeroUGD(a.ugd) -
+            numeroUGD(b.ugd)
+    );
+
+
+    salvarDados();
+
+    atualizarTela();
+
+    gerarRelatorio();
+
+    fecharModal();
+
+    mensagem(
+        ugd + " salva com sucesso."
+    );
+
+}
+
+
+/* ==========================================================
+   NÚMERO UGD
+========================================================== */
+
+function numeroUGD(ugd){
+
+    const m =
+        String(ugd || "").match(/\d+/);
+
+    return m ? Number(m[0]) : 999;
+
+}
+
+
+/* ==========================================================
+   ATUALIZAR TELA
+========================================================== */
+
+function atualizarTela(){
+
+    const tabela =
+        document.getElementById("tabelaRegistros");
+
+    tabela.innerHTML = "";
+
+
+    let disponiveis = 0;
+    let operando = 0;
+    let restricao = 0;
+    let manutencao = 0;
+    let indisponivel = 0;
+
+
+    registros.forEach(function(r){
+
+        const tr =
+            document.createElement("tr");
+
+
+        tr.innerHTML = `
+
+            <td><strong>${esc(r.ugd)}</strong></td>
+
+            <td>${esc(r.equipamento)}</td>
+
+            <td>${esc(formatarData(r.data))}</td>
+
+            <td>${esc(r.hrm || "-")}</td>
+
+            <td>
+                <span class="badge ${classeStatus(r.status)}">
+                    ${esc(r.status || "-")}
+                </span>
+            </td>
+
+            <td>${esc(r.os || "-")}</td>
+
+            <td>${esc(r.causa || r.ocorrencias || "-")}</td>
+
+            <td>${esc(r.acao || "-")}</td>
+
+        `;
+
+
+        tabela.appendChild(tr);
+
+
+        const s =
+            normalizarStatus(r.status);
+
+
+        if(s.includes("disponivel")){
+
+            disponiveis++;
+
+        }else if(
+            s.includes("restricao")
+            ||
+            s.includes("restrição")
+        ){
+
+            restricao++;
+
+        }else if(
+            s.includes("manutencao")
+            ||
+            s.includes("manutenção")
+        ){
+
+            manutencao++;
+
+        }else if(
+            s.includes("indisponivel")
+            ||
+            s.includes("indisponível")
+        ){
+
+            indisponivel++;
+
+        }else if(
+            s.includes("operando")
+            ||
+            s === "op"
+        ){
+
+            operando++;
+
+        }
+
+    });
+
+
+    document.getElementById("totalUGD")
+        .textContent = registros.length;
+
+    document.getElementById("totalDisponiveis")
+        .textContent = disponiveis;
+
+    document.getElementById("totalOperando")
+        .textContent = operando;
+
+    document.getElementById("totalRestricao")
+        .textContent = restricao;
+
+    document.getElementById("totalManutencao")
+        .textContent = manutencao;
+
+    document.getElementById("totalIndisponivel")
+        .textContent = indisponivel;
+
+
+    const percentual =
+        Math.round(
+            (registros.length / 60) * 100
+        );
+
+
+    document.getElementById("progressBar")
+        .style.width =
+            Math.min(percentual,100) + "%";
+
+    document.getElementById("progressBar")
+        .textContent =
+            Math.min(percentual,100) + "%";
+
+
+    document.getElementById("progressoTexto")
+        .textContent =
+            "Progresso: " +
+            registros.length +
+            " / 60";
+
+}
+
+
+/* ==========================================================
+   STATUS
+========================================================== */
+
+function normalizarStatus(status){
+
+    return String(status || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g,"")
+        .trim();
+
+}
+
+
+function classeStatus(status){
+
+    const s =
+        normalizarStatus(status);
+
+
+    if(s.includes("restricao"))
+        return "restricao";
+
+    if(s.includes("manutencao"))
+        return "manutencao";
+
+    if(s.includes("indisponivel"))
+        return "indisponivel";
+
+    if(s.includes("disponivel"))
+        return "disponivel";
+
+    if(s.includes("operando"))
+        return "operando";
+
+    return "";
+
+}
+
+
+/* ==========================================================
+   FORMATA DATA
+========================================================== */
+
+function formatarData(data){
+
+    if(!data)
+        return "";
+
+    if(
+        /^\d{4}-\d{2}-\d{2}$/.test(data)
+    ){
+
+        const partes =
+            data.split("-");
+
+        return partes[2] +
+            "/" +
+            partes[1] +
+            "/" +
+            partes[0];
+
+    }
+
+    return data;
+
+}
+
+
+/* ==========================================================
+   ESC
+========================================================== */
+
+function esc(valor){
+
+    return String(valor ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
+}
+
+
+/* ==========================================================
+   CAPTURA AUTOMÁTICA
+========================================================== */
+
+function abrirCapturaAutomatica(){
+
+    alert(
+        "A captura automática precisa ser executada na página do PIE do Sankhya. " +
+        "O GitHub não consegue acessar diretamente outra aba por segurança do navegador."
+    );
+
+}
+
+
+/* ==========================================================
+   RECEBER DADOS DO CAPTURADOR
+========================================================== */
+
+/*
+    Esta função fica disponível para receber um objeto
+    enviado pelo capturador.
+
+    Exemplo:
+
+    window.receberDadosPIE({
+        ugd:"UGD-01",
+        equipamento:"UTE 550 0024R",
+        hrm:"22438",
+        status:"Operando",
+        os:"272206",
+        causa:"Motor de partida...",
+        ocorrencias:"",
+        acao:"..."
+    });
+*/
+
+window.receberDadosPIE = function(dados){
+
+    if(!dados)
+        return;
+
+
+    let ugd =
+        dados.ugd ||
+        dados.UGD ||
+        "";
+
+
+    if(!ugd){
+
+        mensagem("UGD não identificada.");
+
+        return;
+
+    }
+
+
+    const registro = {
+
+        ugd: ugd,
+
+        equipamento:
+            dados.equipamento ||
+            dados.equip ||
+            equipamentos[ugd] ||
+            "",
+
+        data:
+            dados.data ||
+            "",
+
+        hrm:
+            limparHRM(
+                dados.hrm ||
+                dados.HRM ||
+                ""
+            ),
+
+        status:
+            dados.status ||
+            dados.STATUS ||
+            "",
+
+        os:
+            dados.os ||
+            dados.OS ||
+            "",
+
+        causa:
+            dados.causa ||
+            dados.CAUSA ||
+            "",
+
+        ocorrencias:
+            dados.ocorrencias ||
+            dados.OCORRENCIAS ||
+            "",
+
+        acao:
+            dados.acao ||
+            dados.ACAO ||
+            "",
+
+        previsao:
+            dados.previsao ||
+            "",
+
+        atualizado:
+            new Date().toISOString()
+
+    };
+
+
+    const indice =
+        registros.findIndex(
+            r => r.ugd === ugd
+        );
+
+
+    if(indice >= 0){
+
+        registros[indice] = {
             ...registros[indice],
             ...registro
         };
 
     }else{
 
-        registros.push(
-            registro
-        );
+        registros.push(registro);
 
     }
 
 
     registros.sort(
-        (a,b)=>{
-
-            const A =
-            parseInt(
-                String(
-                    a.ugd || ""
-                )
-                .replace(
-                    /\D/g,
-                    ""
-                )
-            ) || 999;
-
-
-            const B =
-            parseInt(
-                String(
-                    b.ugd || ""
-                )
-                .replace(
-                    /\D/g,
-                    ""
-                )
-            ) || 999;
-
-
-            return A-B;
-
-        }
+        (a,b) =>
+            numeroUGD(a.ugd) -
+            numeroUGD(b.ugd)
     );
 
 
@@ -944,543 +1266,239 @@ function salvarRegistro(
 
     atualizarTela();
 
+    gerarRelatorio();
 
     mensagem(
-        "✅ Capturado: " +
-        (
-            registro.ugd ||
-            registro.equipamento
-        ),
-        "ativo"
+        ugd + " capturada automaticamente."
     );
 
-}
+};
 
 
 /* ==========================================================
-ATUALIZAR TELA
+   RECEBER VÁRIAS UGDs
 ========================================================== */
 
-function atualizarTela(){
+window.receberListaPIE = function(lista){
 
-    const tabela =
-    document.getElementById(
-        "tabelaRegistros"
+    if(!Array.isArray(lista))
+        return;
+
+
+    lista.forEach(function(dados){
+
+        window.receberDadosPIE(dados);
+
+    });
+
+
+    mensagem(
+        lista.length +
+        " registros recebidos."
     );
 
-
-    tabela.innerHTML="";
-
-
-    let disponiveis=0;
-    let operando=0;
-    let restricao=0;
-    let manutencao=0;
-    let indisponivel=0;
-
-
-    registros.forEach(
-        function(r){
-
-            const status =
-            String(
-                r.status || ""
-            ).toUpperCase();
-
-
-            if(
-                status.includes("DISPON") &&
-                !status.includes("INDISPON")
-            ){
-
-                disponiveis++;
-
-            }
-
-
-            if(
-                status.includes("OPERANDO")
-            ){
-
-                operando++;
-
-            }
-
-
-            if(
-                status.includes("RESTRI")
-            ){
-
-                restricao++;
-
-            }
-
-
-            if(
-                status.includes("MANUTEN")
-            ){
-
-                manutencao++;
-
-            }
-
-
-            if(
-                status.includes("INDISPON")
-            ){
-
-                indisponivel++;
-
-            }
-
-
-            const tr =
-            document.createElement(
-                "tr"
-            );
-
-
-            tr.innerHTML = `
-
-<td>${esc(r.ugd)}</td>
-
-<td>${esc(r.equipamento)}</td>
-
-<td>${esc(r.data)}</td>
-
-<td>${esc(r.hrm)}</td>
-
-<td>${esc(r.status)}</td>
-
-<td>${esc(r.os)}</td>
-
-<td>${esc(r.causa)}</td>
-
-<td>${esc(r.ocorrencias)}</td>
-
-<td>${esc(r.acao)}</td>
-
-`;
-
-
-            tabela.appendChild(
-                tr
-            );
-
-        }
-    );
-
-
-    if(
-        registros.length===0
-    ){
-
-        tabela.innerHTML=`
-
-<tr>
-
-<td
-colspan="9"
-class="vazio"
->
-
-Nenhuma UGD capturada.
-
-</td>
-
-</tr>
-
-`;
-
-    }
-
-
-    document
-    .getElementById(
-        "totalUGD"
-    )
-    .textContent =
-    registros.length;
-
-
-    document
-    .getElementById(
-        "totalDisponiveis"
-    )
-    .textContent =
-    disponiveis;
-
-
-    document
-    .getElementById(
-        "totalOperando"
-    )
-    .textContent =
-    operando;
-
-
-    document
-    .getElementById(
-        "totalRestricao"
-    )
-    .textContent =
-    restricao;
-
-
-    document
-    .getElementById(
-        "totalManutencao"
-    )
-    .textContent =
-    manutencao;
-
-
-    document
-    .getElementById(
-        "totalIndisponivel"
-    )
-    .textContent =
-    indisponivel;
-
-}
+};
 
 
 /* ==========================================================
-ESC
-========================================================== */
-
-function esc(
-    valor
-){
-
-    return String(
-        valor || ""
-    )
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#039;");
-
-}
-
-
-/* ==========================================================
-EMOJI
-========================================================== */
-
-function obterEmoji(
-    status
-){
-
-    const s =
-    String(
-        status || ""
-    ).toUpperCase();
-
-
-    if(
-        s.includes("SUBSTIT")
-    ){
-
-        return "⚫";
-
-    }
-
-
-    if(
-        s.includes("INDISPON")
-    ){
-
-        return "🔴";
-
-    }
-
-
-    if(
-        s.includes("MANUTEN")
-    ){
-
-        return "🟠";
-
-    }
-
-
-    if(
-        s.includes("RESTRI")
-    ){
-
-        return "🟡";
-
-    }
-
-
-    return "🟢";
-
-}
-
-
-/* ==========================================================
-RELATÓRIO
+   GERAR RELATÓRIO
 ========================================================== */
 
 function gerarRelatorio(){
 
-    if(
-        registros.length===0
-    ){
+    let texto = "";
 
-        alert(
-            "Nenhuma UGD capturada."
+    const dataHoje =
+        new Date();
+
+
+    const data =
+        dataHoje.toLocaleDateString(
+            "pt-BR"
         );
 
-        return "";
 
-    }
+    texto += "*UTE MAUÉS*\n\n";
 
-
-    let data =
-    registros.find(
-        r=>r.data
-    );
-
-
-    let texto =
-    "*UTE MAUÉS*\n\n";
-
+    texto += "*DATA*: _" +
+        data +
+        "_\n\n";
 
     texto +=
-    "*DATA*: _" +
-    (
-        data
-        ? data.data
-        : new Date()
-        .toLocaleDateString(
-            "pt-BR"
+        "*STATUS DE DISPONIBILIDADE, HORÍMETRO E HORAS DE OPERAÇÃO DAS UGDs*\n\n";
+
+
+    registros
+        .slice()
+        .sort(
+            (a,b) =>
+                numeroUGD(a.ugd) -
+                numeroUGD(b.ugd)
         )
-    ) +
-    "_\n\n";
-
-
-    texto +=
-    "*STATUS DE DISPONIBILIDADE, HORÍMETRO E HORAS DE OPERAÇÃO DAS UGDs*\n\n";
-
-
-    registros.forEach(
-        function(r){
+        .forEach(function(r){
 
             texto +=
-            obterEmoji(
-                r.status
-            ) +
-            "*" +
-            (
-                r.ugd ||
-                "UGD"
-            );
-
-
-            if(
-                r.equipamento
-            ){
-
-                texto +=
+                emojiStatus(r.status) +
+                "*" +
+                r.ugd +
                 " " +
-                r.equipamento;
-
-            }
-
-
-            texto +=
-            "*\n";
+                (r.equipamento || "") +
+                "*\n";
 
 
-            texto +=
-            (
-                r.status ||
-                "STATUS NÃO INFORMADO"
-            ) +
-            "\n";
-
-
-            texto +=
-            "HRM- " +
-            (
-                r.hrm ||
-                "-"
-            ) +
-            "\n";
-
-
-            if(
-                r.horas
-            ){
+            if(r.status){
 
                 texto +=
-                "HORAS DE OPERAÇÃO- " +
-                r.horas +
-                "\n";
+                    r.status.toUpperCase() +
+                    "\n";
 
             }
 
 
-            if(
-                r.os
-            ){
+            if(r.hrm){
 
                 texto +=
-                "(OS " +
-                r.os +
-                ") ";
+                    "HRM- " +
+                    r.hrm +
+                    "\n";
 
             }
 
 
-            if(
-                r.causa
-            ){
+            if(r.os){
 
                 texto +=
-                r.causa +
-                " ";
+                    "(OS " +
+                    r.os +
+                    ") ";
 
             }
 
 
-            if(
-                r.ocorrencias
-            ){
+            let descricao = "";
+
+
+            if(r.causa)
+                descricao += r.causa;
+
+
+            if(r.ocorrencias){
+
+                if(descricao)
+                    descricao += " ";
+
+                descricao += r.ocorrencias;
+
+            }
+
+
+            if(descricao){
+
+                texto += descricao + "\n";
+
+            }
+
+
+            if(r.acao){
 
                 texto +=
-                r.ocorrencias +
-                " ";
+                    "AÇÃO: " +
+                    r.acao +
+                    "\n";
 
             }
 
 
-            if(
-                r.acao
-            ){
+            if(r.previsao){
 
                 texto +=
-                "AÇÃO: " +
-                r.acao;
+                    "PREVISÃO DE RETORNO: " +
+                    r.previsao +
+                    "\n";
 
             }
 
 
-            if(
-                r.previsao
-            ){
+            texto += "\n";
 
-                texto +=
-                " PREVISÃO: " +
-                r.previsao;
-
-            }
+        });
 
 
-            texto +=
-            "\n\n";
-
-        }
-    );
-
-
-    document
-    .getElementById(
-        "relatorio"
-    )
-    .value =
-    texto;
-
-
-    mensagem(
-        "📊 Relatório gerado.",
-        "ativo"
-    );
-
-
-    return texto;
+    document.getElementById("relatorio")
+        .value = texto.trim();
 
 }
 
 
 /* ==========================================================
-COPIAR WHATSAPP
+   EMOJI
+========================================================== */
+
+function emojiStatus(status){
+
+    const s =
+        normalizarStatus(status);
+
+
+    if(
+        s.includes("indisponivel")
+        ||
+        s.includes("manutencao")
+    )
+        return "🔴";
+
+
+    if(
+        s.includes("restricao")
+    )
+        return "🟡";
+
+
+    if(
+        s.includes("operando")
+        ||
+        s.includes("disponivel")
+    )
+        return "🟢";
+
+
+    return "⚪";
+
+}
+
+
+/* ==========================================================
+   COPIAR WHATSAPP
 ========================================================== */
 
 async function copiarWhatsApp(){
 
-    let texto =
-    document
-    .getElementById(
-        "relatorio"
-    )
-    .value;
+    gerarRelatorio();
 
 
-    if(!texto){
-
-        texto =
-        gerarRelatorio();
-
-    }
-
-
-    if(!texto){
-
-        return;
-
-    }
+    const texto =
+        document.getElementById("relatorio").value;
 
 
     try{
 
-        await navigator
-        .clipboard
-        .writeText(
-            texto
-        );
-
+        await navigator.clipboard.writeText(texto);
 
         mensagem(
-            "📋 Relatório copiado para o WhatsApp.",
-            "ativo"
+            "Relatório copiado para o WhatsApp."
         );
 
     }catch(e){
 
         const area =
-        document.createElement(
-            "textarea"
-        );
-
-
-        area.value =
-        texto;
-
-
-        document.body
-        .appendChild(
-            area
-        );
-
+            document.getElementById("relatorio");
 
         area.select();
 
-
-        document.execCommand(
-            "copy"
-        );
-
-
-        area.remove();
-
+        document.execCommand("copy");
 
         mensagem(
-            "📋 Relatório copiado.",
-            "ativo"
+            "Relatório copiado."
         );
 
     }
@@ -1489,758 +1507,245 @@ async function copiarWhatsApp(){
 
 
 /* ==========================================================
-LIMPAR
+   LIMPAR TUDO
 ========================================================== */
 
 function limparTudo(){
 
     if(
         !confirm(
-            "Deseja apagar todas as capturas?"
+            "Deseja apagar todos os registros?"
         )
-    ){
-
+    )
         return;
 
-    }
 
-
-    registros=[];
+    registros = [];
 
     salvarDados();
 
     atualizarTela();
 
-    document
-    .getElementById(
-        "relatorio"
-    )
-    .value="";
-
+    gerarRelatorio();
 
     mensagem(
-        "🗑 Registros apagados."
+        "Todos os dados foram apagados."
     );
 
 }
 
 
 /* ==========================================================
-EXPORTAR
+   EXPORTAR JSON
 ========================================================== */
 
 function exportarJSON(){
 
     const blob =
-    new Blob(
-        [
-            JSON.stringify(
-                registros,
-                null,
-                2
-            )
-        ],
-        {
-            type:
-            "application/json"
-        }
-    );
+        new Blob(
+            [
+                JSON.stringify(
+                    registros,
+                    null,
+                    2
+                )
+            ],
+            {
+                type:"application/json"
+            }
+        );
 
 
     const url =
-    URL.createObjectURL(
-        blob
-    );
+        URL.createObjectURL(blob);
 
 
     const a =
-    document.createElement(
-        "a"
-    );
+        document.createElement("a");
 
 
-    a.href=url;
+    a.href = url;
 
-    a.download=
-    "UTE_MAUES_PIE.json";
+    a.download =
+        "UTE_MAUES_PIE_" +
+        new Date()
+            .toISOString()
+            .slice(0,10) +
+        ".json";
 
 
     a.click();
 
 
-    URL.revokeObjectURL(
-        url
+    URL.revokeObjectURL(url);
+
+
+    mensagem(
+        "Dados exportados."
     );
 
 }
 
 
 /* ==========================================================
-INSTRUÇÕES
+   IMPORTAR JSON
 ========================================================== */
 
-function mostrarInstrucoes(){
+function importarJSON(event){
 
-    document
-    .getElementById(
-        "instrucoes"
-    )
-    .scrollIntoView({
-        behavior:"smooth"
-    });
+    const arquivo =
+        event.target.files[0];
+
+
+    if(!arquivo)
+        return;
+
+
+    const leitor =
+        new FileReader();
+
+
+    leitor.onload =
+        function(e){
+
+            try{
+
+                const dados =
+                    JSON.parse(
+                        e.target.result
+                    );
+
+
+                if(!Array.isArray(dados)){
+
+                    alert(
+                        "Arquivo inválido."
+                    );
+
+                    return;
+
+                }
+
+
+                registros = dados;
+
+
+                salvarDados();
+
+                atualizarTela();
+
+                gerarRelatorio();
+
+
+                mensagem(
+                    "Dados importados."
+                );
+
+
+            }catch(error){
+
+                alert(
+                    "Não foi possível importar o arquivo."
+                );
+
+            }
+
+        };
+
+
+    leitor.readAsText(arquivo);
 
 }
 
 
 /* ==========================================================
-CÓDIGO DO CAPTURADOR
+   EVENTO POSTMESSAGE
 ========================================================== */
 
-const CODIGO_CAPTURADOR = `
+window.addEventListener(
+    "message",
+    function(event){
 
-(function(){
+        if(!event.data)
+            return;
 
-"use strict";
 
+        if(
+            event.data.tipo ===
+            "UTE_MAUES_PIE"
+        ){
 
-if(
-window.__UTE_MAUES_CAPTURADOR
-){
+            if(
+                Array.isArray(
+                    event.data.dados
+                )
+            ){
 
-alert(
-"Capturador UTE Maués já está ativo."
+                window.receberListaPIE(
+                    event.data.dados
+                );
+
+            }else{
+
+                window.receberDadosPIE(
+                    event.data.dados
+                );
+
+            }
+
+        }
+
+    }
 );
-
-return;
-
-}
-
-
-window.__UTE_MAUES_CAPTURADOR=true;
-
-
-let ultimaCaptura="";
-
-
-function textoPagina(){
-
-return document.body
-? document.body.innerText || ""
-: "";
-
-}
-
-
-function limpar(valor){
-
-return String(
-valor || ""
-)
-.replace(/\\\\u00a0/g," ")
-.replace(/[ \\\\t]+/g," ")
-.trim();
-
-}
-
-
-function limparHRM(valor){
-
-let x=
-limpar(valor);
-
-
-x=
-x.replace(
-/\\\\(\\\\s*\\\\+\\\\s*[\\\\d.,]+\\\\s*\\\\)/g,
-""
-);
-
-
-x=
-x.replace(
-/\\\\s*\\\\+\\\\s*[\\\\d.,]+/g,
-""
-);
-
-
-return x.trim();
-
-}
-
-
-function encontrarCampo(nome){
-
-const linhas =
-textoPagina()
-.split("\\\\n")
-.map(limpar)
-.filter(Boolean);
-
-
-const alvo =
-nome.toUpperCase();
-
-
-for(
-let i=0;
-i<linhas.length;
-i++
-){
-
-const linha =
-linhas[i];
-
-
-const maiuscula =
-linha.toUpperCase();
-
-
-const pos =
-maiuscula.indexOf(
-alvo
-);
-
-
-if(pos>=0){
-
-let valor =
-linha.substring(
-pos + nome.length
-);
-
-
-valor =
-valor.replace(
-/^[\\\\s:*=-]+/,
-""
-);
-
-
-valor =
-limpar(valor);
-
-
-if(
-valor &&
-valor.toUpperCase() !== alvo
-){
-
-return valor;
-
-}
-
-
-for(
-let j=i+1;
-j<Math.min(
-i+5,
-linhas.length
-);
-j++
-){
-
-let proxima =
-limpar(
-linhas[j]
-);
-
-
-if(!proxima){
-
-continue;
-
-}
-
-
-if(
-proxima.endsWith(":") ||
-proxima.endsWith(":*")
-){
-
-continue;
-
-}
-
-
-return proxima;
-
-}
-
-}
-
-}
-
-
-return "";
-
-}
-
-
-const MAPA_UGD={
-
-"UTE550-0024R":"UGD-01",
-"UTE550-0028R":"UGD-02",
-"UTE550-0562":"UGD-03",
-"UTE550-0589":"UGD-04",
-"UTE550-0184":"UGD-05",
-"UTE550-0597":"UGD-06",
-"UTE550-0142":"UGD-07",
-"UTE550-0590":"UGD-08",
-"UTE550-0565":"UGD-09",
-"UTE550-0176":"UGD-10",
-"UTE550-0591":"UGD-11",
-"UTE550-0598":"UGD-12",
-"UTE550-0566":"UGD-13",
-"UTE550-0027R":"UGD-14",
-"UTE550-0476":"UGD-15",
-"UTE550-0471":"UGD-16",
-"UTE550-0601":"UGD-17",
-"UTE550-0305":"UGD-18",
-"UTE550-0592":"UGD-19",
-"UTE550-0599":"UGD-20",
-"UTE550-0593":"UGD-21",
-"UTE550-0125R1":"UGD-22",
-"UTE550-0581":"UGD-23",
-"UTE550-0600":"UGD-24",
-"UTE550-0302R1":"UGD-25",
-"UTE360-0015":"UGD-26",
-"UTE550-0366":"UGD-27",
-"UTE550-0594":"UGD-28",
-"UTE550-0241R":"UGD-29",
-"UTE550-0320R":"UGD-30",
-"UTE550-0367":"UGD-31",
-"UTE550-0344R":"UGD-32",
-"UTE550-0482":"UGD-33",
-"UTE550-0299R":"UGD-34",
-"UTE550-0563":"UGD-35",
-"UTE550-0596":"UGD-36",
-"UTE550-0251R":"UGD-37",
-"UTE550-0582":"UGD-38",
-"UTE550-0025R":"UGD-39",
-"UTE625-0038":"UGD-40",
-"UTE550-0517":"UGD-41",
-"UTE550-0514":"UGD-42",
-"UTE550-0518":"UGD-43",
-"UTE550-0609R":"UGD-44",
-"UTE550-0104R":"UGD-45",
-"UTE550-0321R":"UGD-46",
-"UTE550-0602":"UGD-47",
-"UTE550-0515":"UGD-48",
-"UTE625-0019":"UGD-49",
-"UTE550-0297R":"UGD-50",
-"UTE625-0017":"UGD-51",
-"UTE550-0038R":"UGD-52",
-"UTE550-0715":"UGD-53",
-"UTE550-0583":"UGD-54",
-"DIY-C1720 1808201":"UGD-55",
-"DIY-C1720 1808203":"UGD-56",
-"DIY-C1720 1808198":"UGD-57",
-"DIY-C1720 1808199":"UGD-58",
-"DIY-C1720 1808205":"UGD-59",
-"DIY-C1720 1808200":"UGD-60"
-
-};
-
-
-function encontrarEquipamento(){
-
-let x=
-encontrarCampo(
-"IDENTIFICAÇÃO GG"
-);
-
-
-if(x){
-
-return x;
-
-}
-
-
-const texto=
-textoPagina();
-
-
-const equipamentos =
-Object.keys(
-MAPA_UGD
-);
-
-
-for(
-const equipamento
-of equipamentos
-){
-
-if(
-texto.includes(
-equipamento
-)
-){
-
-return equipamento;
-
-}
-
-}
-
-
-return "";
-
-}
-
-
-function encontrarUGD(){
-
-const texto=
-textoPagina();
-
-
-let m=
-texto.match(
-/UGD\\\\s*[- ]?\\\\s*(\\\\d{1,2})/i
-);
-
-
-if(m){
-
-return
-"UGD-" +
-String(
-Number(m[1])
-)
-.padStart(
-2,
-"0"
-);
-
-}
-
-
-const equipamento=
-encontrarEquipamento();
-
-
-if(
-MAPA_UGD[
-equipamento
-]
-){
-
-return
-MAPA_UGD[
-equipamento
-];
-
-}
-
-
-return "";
-
-}
-
-
-function encontrarData(){
-
-return
-encontrarCampo(
-"DT. REFERÊNCIA"
-) ||
-encontrarCampo(
-"DT. REFERENCIA"
-) ||
-"";
-
-}
-
-
-function capturar(){
-
-const registro={
-
-ugd:
-encontrarUGD(),
-
-equipamento:
-encontrarEquipamento(),
-
-data:
-encontrarData(),
-
-hrm:
-limparHRM(
-encontrarCampo(
-"HORÍMETRO"
-)
-),
-
-status:
-encontrarCampo(
-"STATUS OPERAÇÃO"
-),
-
-os:
-encontrarCampo(
-"NUM. OS"
-),
-
-causa:
-encontrarCampo(
-"CAUSA"
-),
-
-ocorrencias:
-encontrarCampo(
-"OCORRÊNCIAS"
-),
-
-acao:
-encontrarCampo(
-"AÇÃO"
-),
-
-previsao:
-encontrarCampo(
-"PREVISÃO DE RETORNO"
-),
-
-statusAcao:
-encontrarCampo(
-"STATUS AÇÃO"
-),
-
-horas:
-encontrarCampo(
-"HORAS"
-)
-
-};
-
-
-if(
-!registro.ugd &&
-!registro.equipamento
-){
-
-console.log(
-"UTE MAUÉS: nenhuma UGD identificada."
-);
-
-return;
-
-}
-
-
-const assinatura =
-JSON.stringify(
-registro
-);
-
-
-if(
-assinatura ===
-ultimaCaptura
-){
-
-return;
-
-}
-
-
-ultimaCaptura =
-assinatura;
-
-
-console.log(
-"UTE MAUÉS — CAPTURA:",
-registro
-);
-
-
-try{
-
-window.parent.postMessage(
-{
-tipo:
-"UTE_MAUES_PIE_REGISTRO",
-registro:
-registro
-},
-"*"
-);
-
-}catch(e){}
-
-
-try{
-
-window.opener.postMessage(
-{
-tipo:
-"UTE_MAUES_PIE_REGISTRO",
-registro:
-registro
-},
-"*"
-);
-
-}catch(e){}
-
-
-}
-
-
-capturar();
-
-
-let ultimoTexto =
-textoPagina();
-
-
-setInterval(
-function(){
-
-const atual =
-textoPagina();
-
-
-if(
-atual !==
-ultimoTexto
-){
-
-ultimoTexto =
-atual;
-
-
-setTimeout(
-capturar,
-800
-);
-
-}
-
-},
-700
-);
-
-
-document.addEventListener(
-"click",
-function(){
-
-setTimeout(
-capturar,
-1200
-);
-
-},
-true
-);
-
-
-alert(
-"UTE MAUÉS\\\\n\\\\n" +
-"CAPTURADOR ATIVO!\\\\n\\\\n" +
-"Agora navegue pelas UGDs usando a seta do PIE."
-);
-
-
-})();
-
-`;
 
 
 /* ==========================================================
-MOSTRAR CÓDIGO
+   EVENTO CUSTOMIZADO
 ========================================================== */
 
-document
-.getElementById(
-    "codigoCapturador"
-)
-.textContent =
-CODIGO_CAPTURADOR;
+window.addEventListener(
+    "ute-pie-dados",
+    function(event){
 
+        if(event.detail){
 
-/* ==========================================================
-COPIAR CAPTURADOR
-========================================================== */
-
-function copiarCapturador(){
-
-    navigator
-    .clipboard
-    .writeText(
-        CODIGO_CAPTURADOR
-    )
-    .then(
-        function(){
-
-            mensagem(
-                "📋 Capturador copiado.",
-                "ativo"
-            );
-
-            alert(
-                "Capturador copiado!\n\n" +
-                "Agora abra o PIE, pressione F12 > Console e cole o código."
+            window.receberDadosPIE(
+                event.detail
             );
 
         }
-    )
-    .catch(
-        function(){
 
-            const area =
-            document.createElement(
-                "textarea"
-            );
-
-
-            area.value =
-            CODIGO_CAPTURADOR;
-
-
-            document.body
-            .appendChild(
-                area
-            );
-
-
-            area.select();
-
-
-            document.execCommand(
-                "copy"
-            );
-
-
-            area.remove();
-
-
-            alert(
-                "Capturador copiado!\n\n" +
-                "Agora abra o PIE, pressione F12 > Console e cole o código."
-            );
-
-        }
-    );
-
-}
+    }
+);
 
 
 /* ==========================================================
-INICIALIZAÇÃO
+   EXPÕE DADOS PARA OUTROS SCRIPTS
 ========================================================== */
 
-carregarDados();
+window.UTE_MAUES = {
 
-atualizarTela();
+    receber:
+        window.receberDadosPIE,
+
+    receberLista:
+        window.receberListaPIE,
+
+    equipamentos:
+        equipamentos,
+
+    registros:
+        function(){
+
+            return registros;
+
+        }
+
+};
+
 
 </script>
 
-
 </body>
-
 </html>
+```
