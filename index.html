@@ -5,8 +5,7 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>UTE Maués - Capturador PIE</title>
 
@@ -17,365 +16,235 @@ content="width=device-width, initial-scale=1.0">
 }
 
 body{
-
     margin:0;
-
-    font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
-
+    font-family:Arial,Helvetica,sans-serif;
     background:#f1f3f5;
-
     color:#222;
 }
 
 .topo{
-
     background:#1f2937;
-
     color:white;
-
     padding:18px;
-
     text-align:center;
 }
 
 .topo h1{
-
     margin:0;
-
-    font-size:22px;
+    font-size:23px;
 }
 
 .topo p{
-
     margin:6px 0 0;
-
-    opacity:.8;
-
+    opacity:.85;
     font-size:13px;
 }
 
 .container{
-
     width:95%;
-
-    max-width:1250px;
-
+    max-width:1300px;
     margin:20px auto;
 }
 
 .card{
-
     background:white;
-
     border-radius:10px;
-
     padding:18px;
-
     margin-bottom:15px;
-
-    box-shadow:
-    0 2px 10px
-    rgba(0,0,0,.08);
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
 }
 
-.botoes{
-
-    display:flex;
-
-    flex-wrap:wrap;
-
-    gap:10px;
-
-    margin-bottom:15px;
-}
-
-button{
-
-    border:none;
-
-    border-radius:7px;
-
-    padding:11px 16px;
-
-    cursor:pointer;
-
-    font-weight:bold;
-
-    font-size:14px;
-}
-
-button:hover{
-
-    opacity:.9;
-}
-
-.btn-principal{
-
-    background:#168b45;
-
-    color:white;
-}
-
-.btn-azul{
-
-    background:#0d6efd;
-
-    color:white;
-}
-
-.btn-secundario{
-
-    background:#e5e7eb;
-
-    color:#222;
-}
-
-.btn-perigo{
-
-    background:#dc3545;
-
-    color:white;
-}
-
-.btn-whatsapp{
-
-    background:#25d366;
-
-    color:white;
+h2{
+    margin-top:0;
 }
 
 .status{
-
     padding:12px;
-
     border-radius:7px;
-
-    background:#eef7ee;
-
-    border:1px solid #cde5cd;
-
+    background:#eef2f7;
+    border:1px solid #d5dce5;
     margin-bottom:15px;
-
     font-weight:bold;
 }
 
 .status.ativo{
-
     background:#e8f7ed;
-
     border-color:#198754;
-
     color:#146c43;
 }
 
 .status.erro{
-
     background:#fff0f0;
-
     border-color:#dc3545;
-
     color:#a71d2a;
 }
 
+.botoes{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin:15px 0;
+}
+
+button{
+    border:none;
+    border-radius:7px;
+    padding:11px 16px;
+    cursor:pointer;
+    font-weight:bold;
+    font-size:14px;
+}
+
+button:hover{
+    opacity:.9;
+}
+
+.btn-verde{
+    background:#168b45;
+    color:white;
+}
+
+.btn-azul{
+    background:#0d6efd;
+    color:white;
+}
+
+.btn-amarelo{
+    background:#f0ad00;
+    color:#111;
+}
+
+.btn-cinza{
+    background:#e5e7eb;
+    color:#222;
+}
+
+.btn-vermelho{
+    background:#dc3545;
+    color:white;
+}
+
+.btn-whatsapp{
+    background:#25d366;
+    color:white;
+}
+
+.campo{
+    margin-bottom:14px;
+}
+
+.campo label{
+    display:block;
+    font-weight:bold;
+    font-size:13px;
+    margin-bottom:5px;
+}
+
+input{
+    width:100%;
+    padding:11px;
+    border:1px solid #ccc;
+    border-radius:7px;
+    font-size:14px;
+}
+
 .contador{
-
     display:grid;
-
-    grid-template-columns:
-    repeat(auto-fit,minmax(150px,1fr));
-
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
     gap:10px;
 }
 
 .contador-item{
-
     background:#f8f9fa;
-
     border:1px solid #ddd;
-
     border-radius:8px;
-
     padding:15px;
-
     text-align:center;
 }
 
 .contador-item strong{
-
     display:block;
-
     font-size:28px;
-
     margin-top:5px;
 }
 
 .tabela{
-
     overflow:auto;
-
-    max-height:550px;
+    max-height:600px;
 }
 
 table{
-
     width:100%;
-
     border-collapse:collapse;
 }
 
 th,
 td{
-
     padding:9px;
-
     border-bottom:1px solid #ddd;
-
     text-align:left;
-
     font-size:13px;
-
-    white-space:nowrap;
+    vertical-align:top;
 }
 
 th{
-
     background:#f3f4f6;
-
     position:sticky;
-
     top:0;
-
     z-index:2;
 }
 
 textarea{
-
     width:100%;
-
-    min-height:400px;
-
+    min-height:450px;
     resize:vertical;
-
     padding:12px;
-
     border:1px solid #ccc;
-
     border-radius:8px;
-
     font-family:Arial;
-
     font-size:14px;
-
     line-height:1.45;
 }
 
-input{
-
-    width:100%;
-
-    padding:10px;
-
-    border:1px solid #ccc;
-
-    border-radius:7px;
-
-    font-size:14px;
-}
-
-.campo{
-
-    margin-bottom:15px;
-}
-
-.campo label{
-
-    display:block;
-
-    font-weight:bold;
-
-    font-size:13px;
-
-    margin-bottom:5px;
-}
-
 .instrucoes{
-
     background:#f8fafc;
-
     border:1px solid #dbe3ec;
-
     border-radius:8px;
-
     padding:15px;
-
     line-height:1.6;
-
     font-size:14px;
-}
-
-.codigo{
-
-    background:#111827;
-
-    color:#e5e7eb;
-
-    padding:12px;
-
-    border-radius:7px;
-
-    overflow:auto;
-
-    font-size:11px;
-
-    white-space:pre-wrap;
-
-    word-break:break-all;
-}
-
-.pill{
-
-    display:inline-block;
-
-    padding:5px 9px;
-
-    border-radius:20px;
-
-    background:#e5e7eb;
-
-    font-size:12px;
-
-    font-weight:bold;
-
-    margin:3px;
 }
 
 .vazio{
-
     text-align:center;
-
     padding:30px;
-
     color:#777;
 }
 
-@media(max-width:600px){
+.codigo{
+    background:#111827;
+    color:#e5e7eb;
+    padding:12px;
+    border-radius:7px;
+    overflow:auto;
+    font-size:11px;
+    white-space:pre-wrap;
+    word-break:break-all;
+    max-height:400px;
+}
+
+@media(max-width:700px){
 
     .container{
-
         width:98%;
     }
 
-    button{
-
-        width:100%;
+    .botoes{
+        flex-direction:column;
     }
 
-    .botoes{
-
-        flex-direction:column;
+    button{
+        width:100%;
     }
 
 }
@@ -384,13 +253,13 @@ input{
 
 </head>
 
+
 <body>
+
 
 <header class="topo">
 
-<h1>
-UTE MAUÉS
-</h1>
+<h1>UTE MAUÉS</h1>
 
 <p>
 Capturador automático — PIE / Informações Diárias
@@ -408,29 +277,25 @@ CONEXÃO
 
 <section class="card">
 
-<h2>
-🔗 Conexão com o PIE
-</h2>
+<h2>🔗 Conexão com o PIE</h2>
 
 <div
 id="status"
 class="status"
 >
-
 🟢 Sistema pronto.
-
 </div>
 
 
 <div class="campo">
 
 <label>
-URL do PIE
+Endereço do PIE
 </label>
 
 <input
 id="urlPIE"
-placeholder="Cole aqui o endereço do PIE do Sankhya"
+value="http://sankhya.oliveiraenergia.com.br:8180/mge/system.jsp#app/YnIuY29tLnNhbmtoeWEubWVudS5hZGljaW9uYWwuQURfSU5GSE9SQVJJQQ=="
 >
 
 </div>
@@ -439,7 +304,7 @@ placeholder="Cole aqui o endereço do PIE do Sankhya"
 <div class="botoes">
 
 <button
-class="btn-principal"
+class="btn-verde"
 onclick="abrirPIE()"
 >
 🚀 ABRIR PIE
@@ -453,46 +318,63 @@ onclick="copiarCapturador()"
 </button>
 
 <button
-class="btn-secundario"
-onclick="testarConexao()"
+class="btn-amarelo"
+onclick="mostrarInstrucoes()"
 >
-🔄 TESTAR CONEXÃO
+⚙️ COMO ATIVAR
 </button>
 
 </div>
 
 
-<div class="instrucoes">
+<div
+id="instrucoes"
+class="instrucoes"
+>
 
-<strong>Como vamos trabalhar:</strong>
+<strong>FLUXO DO SISTEMA</strong>
 
-<br>
+<br><br>
 
-1. Cole o endereço do PIE acima.
-
-<br>
-
-2. Clique em <strong>ABRIR PIE</strong>.
-
-<br>
-
-3. Na página do Sankhya, execute o capturador.
+1. Clique em <strong>ABRIR PIE</strong>.
 
 <br>
 
-4. Deixe a primeira UGD aberta.
+2. Entre no Sankhya normalmente.
 
 <br>
 
-5. Clique na seta ➡️ para passar para a próxima.
+3. Abra o menu
+<strong>PIE – Informações Diárias</strong>.
 
 <br>
 
-6. O sistema enviará cada registro para este painel.
+4. Abra a primeira UGD.
 
 <br>
 
-7. Ao terminar as 60 UGDs, clique em
+5. Clique em
+<strong>COPIAR CAPTURADOR</strong>.
+
+<br>
+
+6. O capturador deverá ser executado na página do PIE.
+
+<br>
+
+7. Depois clique na seta ➡️ para passar pelas UGDs.
+
+<br>
+
+8. O sistema captura os registros.
+
+<br>
+
+9. Ao terminar, volte para esta página.
+
+<br>
+
+10. Clique em
 <strong>GERAR RELATÓRIO</strong>.
 
 </div>
@@ -501,14 +383,12 @@ onclick="testarConexao()"
 
 
 <!-- =====================================================
-CONTADOR
+CONTADORES
 ===================================================== -->
 
 <section class="card">
 
-<h2>
-📊 Resumo
-</h2>
+<h2>📊 Resumo da Captura</h2>
 
 <div class="contador">
 
@@ -590,35 +470,37 @@ REGISTROS
 
 <section class="card">
 
-<h2>
-📋 Registros Capturados
-</h2>
+<h2>📋 Registros Capturados</h2>
+
 
 <div class="botoes">
 
 <button
-class="btn-principal"
+class="btn-verde"
 onclick="gerarRelatorio()"
 >
 📊 GERAR RELATÓRIO
 </button>
 
+
 <button
 class="btn-whatsapp"
 onclick="copiarWhatsApp()"
 >
-📋 COPIAR WHATSAPP
+📱 COPIAR WHATSAPP
 </button>
 
+
 <button
-class="btn-secundario"
+class="btn-azul"
 onclick="exportarJSON()"
 >
 💾 EXPORTAR
 </button>
 
+
 <button
-class="btn-perigo"
+class="btn-vermelho"
 onclick="limparTudo()"
 >
 🗑 LIMPAR
@@ -639,6 +521,8 @@ onclick="limparTudo()"
 
 <th>Equipamento</th>
 
+<th>Data</th>
+
 <th>HRM</th>
 
 <th>Status</th>
@@ -654,6 +538,7 @@ onclick="limparTudo()"
 </tr>
 
 </thead>
+
 
 <tbody id="tabelaRegistros">
 
@@ -676,10 +561,23 @@ RELATÓRIO
 📱 Relatório para WhatsApp
 </h2>
 
+
 <textarea
 id="relatorio"
-placeholder="O relatório será gerado aqui..."
+placeholder="Clique em GERAR RELATÓRIO..."
 ></textarea>
+
+
+<div class="botoes">
+
+<button
+class="btn-whatsapp"
+onclick="copiarWhatsApp()"
+>
+📋 COPIAR RELATÓRIO
+</button>
+
+</div>
 
 </section>
 
@@ -691,47 +589,36 @@ CAPTURADOR
 <section class="card">
 
 <h2>
-⚙️ Capturador do PIE
+⚙️ Código do Capturador PIE
 </h2>
 
 <div class="instrucoes">
 
-O código abaixo é o capturador que será executado
-<strong>dentro da página do Sankhya</strong>.
+Este é o código que lê a tela do PIE.
+
+Ele procura automaticamente:
 
 <br><br>
 
-Ele lê:
-
-<br>
-
-<span class="pill">UGD</span>
-
-<span class="pill">Equipamento</span>
-
-<span class="pill">Data</span>
-
-<span class="pill">HRM</span>
-
-<span class="pill">Status</span>
-
-<span class="pill">OS</span>
-
-<span class="pill">Causa</span>
-
-<span class="pill">Ocorrências</span>
-
-<span class="pill">Ação</span>
-
-<span class="pill">Previsão</span>
+<strong>UGD</strong><br>
+<strong>IDENTIFICAÇÃO GG</strong><br>
+<strong>HORÍMETRO</strong><br>
+<strong>STATUS OPERAÇÃO</strong><br>
+<strong>NUM. OS</strong><br>
+<strong>CAUSA</strong><br>
+<strong>OCORRÊNCIAS</strong><br>
+<strong>AÇÃO</strong><br>
+<strong>PREVISÃO DE RETORNO</strong><br>
+<strong>HORAS</strong>
 
 <br><br>
 
-Também remove automaticamente os
-<strong>acréscimos do HRM</strong>.
+Também remove os acréscimos encontrados no HRM.
 
 </div>
 
+
+<br>
 
 <div
 id="codigoCapturador"
@@ -746,16 +633,16 @@ class="codigo"
 
 <script>
 
+
 /* ==========================================================
 CONFIGURAÇÃO
 ========================================================== */
 
 const STORAGE_KEY =
-"UTE_MAUES_PIE_GITHUB_V1";
+"UTE_MAUES_PIE_HTML_V2";
 
 
 let registros = [];
-
 
 let janelaPIE = null;
 
@@ -780,17 +667,13 @@ function carregarDados(){
 
         }
 
-        if(
-            !Array.isArray(
-                registros
-            )
-        ){
-
-            registros=[];
-
-        }
-
     }catch(e){
+
+        registros=[];
+
+    }
+
+    if(!Array.isArray(registros)){
 
         registros=[];
 
@@ -819,7 +702,7 @@ function salvarDados(){
 
 
 /* ==========================================================
-STATUS
+MENSAGEM
 ========================================================== */
 
 function mensagem(
@@ -867,7 +750,7 @@ function abrirPIE(){
     if(!url){
 
         alert(
-            "Cole primeiro o endereço do PIE."
+            "Endereço do PIE não informado."
         );
 
         return;
@@ -875,45 +758,35 @@ function abrirPIE(){
     }
 
 
-    try{
+    janelaPIE =
+    window.open(
+        url,
+        "PIE_UTE_MAUES"
+    );
 
-        janelaPIE =
-        window.open(
-            url,
-            "PIE_UTE_MAUES"
+
+    if(!janelaPIE){
+
+        alert(
+            "O navegador bloqueou a janela do Sankhya.\n\n" +
+            "Permita pop-ups para este site."
         );
 
-
-        if(!janelaPIE){
-
-            alert(
-                "O navegador bloqueou a janela. Permita pop-ups para este site."
-            );
-
-            return;
-
-        }
-
-
-        mensagem(
-            "🟢 PIE aberto. Agora execute o capturador na página do Sankhya.",
-            "ativo"
-        );
-
-    }catch(e){
-
-        mensagem(
-            "❌ Não foi possível abrir o PIE.",
-            "erro"
-        );
+        return;
 
     }
+
+
+    mensagem(
+        "🟢 PIE aberto. Entre no Sankhya e abra as Informações Diárias.",
+        "ativo"
+    );
 
 }
 
 
 /* ==========================================================
-RECEBER DADOS DO PIE
+RECEBER DO PIE
 ========================================================== */
 
 window.addEventListener(
@@ -951,6 +824,39 @@ window.addEventListener(
 
 
 /* ==========================================================
+LIMPAR HRM
+========================================================== */
+
+function limparHRM(
+    valor
+){
+
+    let texto =
+    String(
+        valor || ""
+    );
+
+
+    texto =
+    texto.replace(
+        /\(\s*\+\s*[\d.,]+\s*\)/g,
+        ""
+    );
+
+
+    texto =
+    texto.replace(
+        /\s*\+\s*[\d.,]+/g,
+        ""
+    );
+
+
+    return texto.trim();
+
+}
+
+
+/* ==========================================================
 SALVAR REGISTRO
 ========================================================== */
 
@@ -962,11 +868,6 @@ function salvarRegistro(
         !registro.ugd &&
         !registro.equipamento
     ){
-
-        mensagem(
-            "⚠️ Registro recebido sem UGD/equipamento.",
-            "erro"
-        );
 
         return;
 
@@ -981,20 +882,21 @@ function salvarRegistro(
 
     const indice =
     registros.findIndex(
-        item =>
-        item.ugd &&
+        r =>
+        r.ugd &&
         registro.ugd &&
-        item.ugd ===
+        r.ugd ===
         registro.ugd
     );
 
 
-    if(
-        indice >= 0
-    ){
+    if(indice >= 0){
 
         registros[indice] =
-        registro;
+        {
+            ...registros[indice],
+            ...registro
+        };
 
     }else{
 
@@ -1006,7 +908,7 @@ function salvarRegistro(
 
 
     registros.sort(
-        function(a,b){
+        (a,b)=>{
 
             const A =
             parseInt(
@@ -1056,39 +958,6 @@ function salvarRegistro(
 
 
 /* ==========================================================
-HRM
-========================================================== */
-
-function limparHRM(
-    valor
-){
-
-    let texto =
-    String(
-        valor || ""
-    );
-
-
-    texto =
-    texto.replace(
-        /\(\s*\+\s*[\d.,]+\s*\)/g,
-        ""
-    );
-
-
-    texto =
-    texto.replace(
-        /\s*\+\s*[\d.,]+/g,
-        ""
-    );
-
-
-    return texto.trim();
-
-}
-
-
-/* ==========================================================
 ATUALIZAR TELA
 ========================================================== */
 
@@ -1100,62 +969,28 @@ function atualizarTela(){
     );
 
 
-    tabela.innerHTML =
-    "";
+    tabela.innerHTML="";
 
 
     let disponiveis=0;
-
     let operando=0;
-
     let restricao=0;
-
     let manutencao=0;
-
     let indisponivel=0;
 
 
-    if(
-        registros.length === 0
-    ){
-
-        tabela.innerHTML = `
-
-        <tr>
-
-            <td
-            colspan="8"
-            class="vazio"
-            >
-
-            Nenhum registro capturado.
-
-            </td>
-
-        </tr>
-
-        `;
-
-    }
-
-
     registros.forEach(
-        function(registro){
+        function(r){
 
             const status =
             String(
-                registro.status ||
-                ""
+                r.status || ""
             ).toUpperCase();
 
 
             if(
-                status.includes(
-                    "DISPON"
-                ) &&
-                !status.includes(
-                    "INDISPON"
-                )
+                status.includes("DISPON") &&
+                !status.includes("INDISPON")
             ){
 
                 disponiveis++;
@@ -1164,8 +999,7 @@ function atualizarTela(){
 
 
             if(
-                status ===
-                "OPERANDO"
+                status.includes("OPERANDO")
             ){
 
                 operando++;
@@ -1174,9 +1008,7 @@ function atualizarTela(){
 
 
             if(
-                status.includes(
-                    "RESTRI"
-                )
+                status.includes("RESTRI")
             ){
 
                 restricao++;
@@ -1185,9 +1017,7 @@ function atualizarTela(){
 
 
             if(
-                status.includes(
-                    "MANUTEN"
-                )
+                status.includes("MANUTEN")
             ){
 
                 manutencao++;
@@ -1196,9 +1026,7 @@ function atualizarTela(){
 
 
             if(
-                status.includes(
-                    "INDISPON"
-                )
+                status.includes("INDISPON")
             ){
 
                 indisponivel++;
@@ -1214,39 +1042,25 @@ function atualizarTela(){
 
             tr.innerHTML = `
 
-            <td>
-            ${esc(registro.ugd)}
-            </td>
+<td>${esc(r.ugd)}</td>
 
-            <td>
-            ${esc(registro.equipamento)}
-            </td>
+<td>${esc(r.equipamento)}</td>
 
-            <td>
-            ${esc(registro.hrm)}
-            </td>
+<td>${esc(r.data)}</td>
 
-            <td>
-            ${esc(registro.status)}
-            </td>
+<td>${esc(r.hrm)}</td>
 
-            <td>
-            ${esc(registro.os)}
-            </td>
+<td>${esc(r.status)}</td>
 
-            <td>
-            ${esc(registro.causa)}
-            </td>
+<td>${esc(r.os)}</td>
 
-            <td>
-            ${esc(registro.ocorrencias)}
-            </td>
+<td>${esc(r.causa)}</td>
 
-            <td>
-            ${esc(registro.acao)}
-            </td>
+<td>${esc(r.ocorrencias)}</td>
 
-            `;
+<td>${esc(r.acao)}</td>
+
+`;
 
 
             tabela.appendChild(
@@ -1255,6 +1069,30 @@ function atualizarTela(){
 
         }
     );
+
+
+    if(
+        registros.length===0
+    ){
+
+        tabela.innerHTML=`
+
+<tr>
+
+<td
+colspan="9"
+class="vazio"
+>
+
+Nenhuma UGD capturada.
+
+</td>
+
+</tr>
+
+`;
+
+    }
 
 
     document
@@ -1318,26 +1156,11 @@ function esc(
     return String(
         valor || ""
     )
-    .replace(
-        /&/g,
-        "&amp;"
-    )
-    .replace(
-        /</g,
-        "&lt;"
-    )
-    .replace(
-        />/g,
-        "&gt;"
-    )
-    .replace(
-        /"/g,
-        "&quot;"
-    )
-    .replace(
-        /'/g,
-        "&#039;"
-    );
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
 
 }
 
@@ -1346,7 +1169,7 @@ function esc(
 EMOJI
 ========================================================== */
 
-function emoji(
+function obterEmoji(
     status
 ){
 
@@ -1357,9 +1180,7 @@ function emoji(
 
 
     if(
-        s.includes(
-            "SUBSTIT"
-        )
+        s.includes("SUBSTIT")
     ){
 
         return "⚫";
@@ -1368,9 +1189,7 @@ function emoji(
 
 
     if(
-        s.includes(
-            "INDISPON"
-        )
+        s.includes("INDISPON")
     ){
 
         return "🔴";
@@ -1379,9 +1198,7 @@ function emoji(
 
 
     if(
-        s.includes(
-            "MANUTEN"
-        )
+        s.includes("MANUTEN")
     ){
 
         return "🟠";
@@ -1390,9 +1207,7 @@ function emoji(
 
 
     if(
-        s.includes(
-            "RESTRI"
-        )
+        s.includes("RESTRI")
     ){
 
         return "🟡";
@@ -1412,7 +1227,7 @@ RELATÓRIO
 function gerarRelatorio(){
 
     if(
-        registros.length === 0
+        registros.length===0
     ){
 
         alert(
@@ -1424,14 +1239,14 @@ function gerarRelatorio(){
     }
 
 
+    let data =
+    registros.find(
+        r=>r.data
+    );
+
+
     let texto =
     "*UTE MAUÉS*\n\n";
-
-
-    const data =
-    registros.find(
-        r => r.data
-    );
 
 
     texto +=
@@ -1455,12 +1270,9 @@ function gerarRelatorio(){
         function(r){
 
             texto +=
-            emoji(
+            obterEmoji(
                 r.status
-            );
-
-
-            texto +=
+            ) +
             "*" +
             (
                 r.ugd ||
@@ -1584,9 +1396,7 @@ function gerarRelatorio(){
 
 
     mensagem(
-        "📊 Relatório gerado com " +
-        registros.length +
-        " UGDs.",
+        "📊 Relatório gerado.",
         "ativo"
     );
 
@@ -1597,7 +1407,7 @@ function gerarRelatorio(){
 
 
 /* ==========================================================
-COPIAR
+COPIAR WHATSAPP
 ========================================================== */
 
 async function copiarWhatsApp(){
@@ -1697,11 +1507,9 @@ function limparTudo(){
 
     registros=[];
 
-
     salvarDados();
 
     atualizarTela();
-
 
     document
     .getElementById(
@@ -1711,7 +1519,7 @@ function limparTudo(){
 
 
     mensagem(
-        "🗑 Capturas apagadas."
+        "🗑 Registros apagados."
     );
 
 }
@@ -1723,18 +1531,14 @@ EXPORTAR
 
 function exportarJSON(){
 
-    const dados =
-    JSON.stringify(
-        registros,
-        null,
-        2
-    );
-
-
     const blob =
     new Blob(
         [
-            dados
+            JSON.stringify(
+                registros,
+                null,
+                2
+            )
         ],
         {
             type:
@@ -1772,35 +1576,24 @@ function exportarJSON(){
 
 
 /* ==========================================================
-TESTAR
+INSTRUÇÕES
 ========================================================== */
 
-function testarConexao(){
+function mostrarInstrucoes(){
 
-    if(
-        janelaPIE &&
-        !janelaPIE.closed
-    ){
-
-        mensagem(
-            "🟢 Janela do PIE está aberta.",
-            "ativo"
-        );
-
-    }else{
-
-        mensagem(
-            "⚠️ A janela do PIE não está conectada.",
-            "erro"
-        );
-
-    }
+    document
+    .getElementById(
+        "instrucoes"
+    )
+    .scrollIntoView({
+        behavior:"smooth"
+    });
 
 }
 
 
 /* ==========================================================
-CAPTURADOR QUE SERÁ EXECUTADO NO PIE
+CÓDIGO DO CAPTURADOR
 ========================================================== */
 
 const CODIGO_CAPTURADOR = `
@@ -1809,29 +1602,40 @@ const CODIGO_CAPTURADOR = `
 
 "use strict";
 
-if(window.__UTE_MAUES_CAPTURADOR_ATIVO){
 
-alert("Capturador UTE Maués já está ativo.");
+if(
+window.__UTE_MAUES_CAPTURADOR
+){
+
+alert(
+"Capturador UTE Maués já está ativo."
+);
 
 return;
 
 }
 
-window.__UTE_MAUES_CAPTURADOR_ATIVO=true;
 
-let ultima="";
+window.__UTE_MAUES_CAPTURADOR=true;
+
+
+let ultimaCaptura="";
 
 
 function textoPagina(){
 
-return document.body.innerText || "";
+return document.body
+? document.body.innerText || ""
+: "";
 
 }
 
 
-function limpar(v){
+function limpar(valor){
 
-return String(v || "")
+return String(
+valor || ""
+)
 .replace(/\\\\u00a0/g," ")
 .replace(/[ \\\\t]+/g," ")
 .trim();
@@ -1839,94 +1643,140 @@ return String(v || "")
 }
 
 
-function hrm(v){
+function limparHRM(valor){
 
-let x=limpar(v);
+let x=
+limpar(valor);
 
-x=x.replace(/\\\\(\\\\s*\\\\+\\\\s*[\\\\d.,]+\\\\s*\\\\)/g,"");
 
-x=x.replace(/\\\\s*\\\\+\\\\s*[\\\\d.,]+/g,"");
+x=
+x.replace(
+/\\\\(\\\\s*\\\\+\\\\s*[\\\\d.,]+\\\\s*\\\\)/g,
+""
+);
+
+
+x=
+x.replace(
+/\\\\s*\\\\+\\\\s*[\\\\d.,]+/g,
+""
+);
+
 
 return x.trim();
 
 }
 
 
-function campo(rotulo){
+function encontrarCampo(nome){
 
-const linhas=
+const linhas =
 textoPagina()
 .split("\\\\n")
 .map(limpar)
 .filter(Boolean);
 
-const alvo=
-rotulo.toUpperCase();
 
-for(let i=0;i<linhas.length;i++){
+const alvo =
+nome.toUpperCase();
 
-const linha=
+
+for(
+let i=0;
+i<linhas.length;
+i++
+){
+
+const linha =
 linhas[i];
 
-const maiuscula=
+
+const maiuscula =
 linha.toUpperCase();
 
-if(maiuscula.includes(alvo)){
 
-let depois=
-linha.substring(
-maiuscula.indexOf(alvo)+
-rotulo.length
+const pos =
+maiuscula.indexOf(
+alvo
 );
 
-depois=
-depois.replace(
+
+if(pos>=0){
+
+let valor =
+linha.substring(
+pos + nome.length
+);
+
+
+valor =
+valor.replace(
 /^[\\\\s:*=-]+/,
 ""
 );
 
-depois=
-limpar(depois);
+
+valor =
+limpar(valor);
+
 
 if(
-depois &&
-depois.toUpperCase()!==alvo
+valor &&
+valor.toUpperCase() !== alvo
 ){
 
-return depois;
+return valor;
 
 }
+
 
 for(
 let j=i+1;
-j<Math.min(i+6,linhas.length);
+j<Math.min(
+i+5,
+linhas.length
+);
 j++
 ){
 
-const p=
-limpar(linhas[j]);
+let proxima =
+limpar(
+linhas[j]
+);
 
-if(!p) continue;
+
+if(!proxima){
+
+continue;
+
+}
+
 
 if(
-p.endsWith(":") ||
-p.endsWith(":*")
-) continue;
+proxima.endsWith(":") ||
+proxima.endsWith(":*")
+){
 
-return p;
+continue;
+
+}
+
+
+return proxima;
 
 }
 
 }
 
 }
+
 
 return "";
 
 }
 
 
-const mapa={
+const MAPA_UGD={
 
 "UTE550-0024R":"UGD-01",
 "UTE550-0028R":"UGD-02",
@@ -1992,133 +1842,204 @@ const mapa={
 };
 
 
-function equipamento(){
+function encontrarEquipamento(){
 
 let x=
-campo("IDENTIFICAÇÃO GG");
-
-if(x) return x;
-
-const texto=
-textoPagina();
-
-const achado=
-texto.match(
-/(?:UTE|DIY)[A-Z0-9- ]{5,30}/i
+encontrarCampo(
+"IDENTIFICAÇÃO GG"
 );
 
-return achado
-? limpar(achado[0])
-: "";
+
+if(x){
+
+return x;
 
 }
 
 
-function ugd(){
+const texto=
+textoPagina();
+
+
+const equipamentos =
+Object.keys(
+MAPA_UGD
+);
+
+
+for(
+const equipamento
+of equipamentos
+){
+
+if(
+texto.includes(
+equipamento
+)
+){
+
+return equipamento;
+
+}
+
+}
+
+
+return "";
+
+}
+
+
+function encontrarUGD(){
 
 const texto=
 textoPagina();
 
-const m=
+
+let m=
 texto.match(
-/(?:MU)?UGD[\\\\s-]*(\\\\d{1,2})/i
+/UGD\\\\s*[- ]?\\\\s*(\\\\d{1,2})/i
 );
+
 
 if(m){
 
-return "UGD-"+String(
+return
+"UGD-" +
+String(
 Number(m[1])
-).padStart(2,"0");
-
-}
-
-const eq=
-equipamento();
-
-if(mapa[eq]){
-
-return mapa[eq];
-
-}
-
-const chave=
-Object.keys(mapa)
-.find(
-k=>
-k.toUpperCase()===
-eq.toUpperCase()
+)
+.padStart(
+2,
+"0"
 );
 
-return chave
-? mapa[chave]
-: "";
+}
+
+
+const equipamento=
+encontrarEquipamento();
+
+
+if(
+MAPA_UGD[
+equipamento
+]
+){
+
+return
+MAPA_UGD[
+equipamento
+];
 
 }
 
 
-function data(){
+return "";
+
+}
+
+
+function encontrarData(){
 
 return
-campo("DT. REFERÊNCIA") ||
-campo("DT. REFERENCIA") ||
-(
-textoPagina()
-.match(
-/\\\\b\\\\d{2}\\\\/\\\\d{2}\\\\/\\\\d{4}\\\\b/
-)||[""]
-)[0];
+encontrarCampo(
+"DT. REFERÊNCIA"
+) ||
+encontrarCampo(
+"DT. REFERENCIA"
+) ||
+"";
 
 }
 
 
 function capturar(){
 
-const r={
+const registro={
 
-ugd:ugd(),
+ugd:
+encontrarUGD(),
 
-equipamento:equipamento(),
+equipamento:
+encontrarEquipamento(),
 
-data:data(),
+data:
+encontrarData(),
 
-hrm:hrm(
-campo("HORÍMETRO")
+hrm:
+limparHRM(
+encontrarCampo(
+"HORÍMETRO"
+)
 ),
 
 status:
-campo("STATUS OPERAÇÃO"),
+encontrarCampo(
+"STATUS OPERAÇÃO"
+),
 
 os:
-campo("NUM. OS"),
+encontrarCampo(
+"NUM. OS"
+),
 
 causa:
-campo("CAUSA"),
+encontrarCampo(
+"CAUSA"
+),
 
 ocorrencias:
-campo("OCORRÊNCIAS"),
+encontrarCampo(
+"OCORRÊNCIAS"
+),
 
 acao:
-campo("AÇÃO"),
+encontrarCampo(
+"AÇÃO"
+),
 
 previsao:
-campo("PREVISÃO DE RETORNO"),
+encontrarCampo(
+"PREVISÃO DE RETORNO"
+),
 
 statusAcao:
-campo("STATUS AÇÃO"),
+encontrarCampo(
+"STATUS AÇÃO"
+),
 
 horas:
-campo("HORAS")
+encontrarCampo(
+"HORAS"
+)
 
 };
 
 
-const assinatura=
-JSON.stringify(r);
+if(
+!registro.ugd &&
+!registro.equipamento
+){
+
+console.log(
+"UTE MAUÉS: nenhuma UGD identificada."
+);
+
+return;
+
+}
+
+
+const assinatura =
+JSON.stringify(
+registro
+);
 
 
 if(
-!r.ugd &&
-!r.equipamento
+assinatura ===
+ultimaCaptura
 ){
 
 return;
@@ -2126,116 +2047,104 @@ return;
 }
 
 
-if(
-assinatura===ultima
-){
-
-return;
-
-}
-
-
-ultima=
+ultimaCaptura =
 assinatura;
 
 
-window.opener.postMessage(
+console.log(
+"UTE MAUÉS — CAPTURA:",
+registro
+);
 
+
+try{
+
+window.parent.postMessage(
 {
-
 tipo:
 "UTE_MAUES_PIE_REGISTRO",
+registro:
+registro
+},
+"*"
+);
 
-registro:r
+}catch(e){}
+
+
+try{
+
+window.opener.postMessage(
+{
+tipo:
+"UTE_MAUES_PIE_REGISTRO",
+registro:
+registro
+},
+"*"
+);
+
+}catch(e){}
+
+
+}
+
+
+capturar();
+
+
+let ultimoTexto =
+textoPagina();
+
+
+setInterval(
+function(){
+
+const atual =
+textoPagina();
+
+
+if(
+atual !==
+ultimoTexto
+){
+
+ultimoTexto =
+atual;
+
+
+setTimeout(
+capturar,
+800
+);
+
+}
 
 },
-
-"*"
-
+700
 );
-
-console.log(
-"UTE MAUÉS CAPTURADO:",
-r
-);
-
-}
-
-
-function proximo(elemento){
-
-const texto=
-(
-
-elemento.innerText ||
-elemento.textContent ||
-""+
-
-" "+
-(elemento.title||"")+
-
-" "+
-(elemento.getAttribute("aria-label")||"")+
-
-" "+
-(elemento.className||"")
-
-).toLowerCase();
-
-
-return
-
-texto.includes("próximo") ||
-texto.includes("proximo") ||
-texto.includes("next") ||
-texto.includes("avançar") ||
-texto.includes("avancar") ||
-texto.includes("seguinte") ||
-texto.includes("›") ||
-texto.includes("»") ||
-texto.includes("→") ||
-texto.includes("nextpage");
-
-}
 
 
 document.addEventListener(
 "click",
-function(e){
-
-let el=e.target;
-
-if(!el) return;
-
-const botao=
-el.closest(
-"button,a,[role='button'],[title],[aria-label]"
-);
-
-if(!botao) return;
-
-if(
-proximo(botao)
-){
+function(){
 
 setTimeout(
 capturar,
-1300
+1200
 );
-
-}
 
 },
 true
 );
 
 
-capturar();
-
-
 alert(
-"UTE Maués: CAPTURADOR ATIVO.\\n\\nAgora clique na seta ➡️ para passar pelas UGDs."
+"UTE MAUÉS\\\\n\\\\n" +
+"CAPTURADOR ATIVO!\\\\n\\\\n" +
+"Agora navegue pelas UGDs usando a seta do PIE."
 );
+
 
 })();
 
@@ -2269,8 +2178,13 @@ function copiarCapturador(){
         function(){
 
             mensagem(
-                "📋 Código do capturador copiado. Cole na página do PIE.",
+                "📋 Capturador copiado.",
                 "ativo"
+            );
+
+            alert(
+                "Capturador copiado!\n\n" +
+                "Agora abra o PIE, pressione F12 > Console e cole o código."
             );
 
         }
@@ -2283,25 +2197,31 @@ function copiarCapturador(){
                 "textarea"
             );
 
+
             area.value =
             CODIGO_CAPTURADOR;
+
 
             document.body
             .appendChild(
                 area
             );
 
+
             area.select();
+
 
             document.execCommand(
                 "copy"
             );
 
+
             area.remove();
 
-            mensagem(
-                "📋 Código copiado.",
-                "ativo"
+
+            alert(
+                "Capturador copiado!\n\n" +
+                "Agora abra o PIE, pressione F12 > Console e cole o código."
             );
 
         }
@@ -2311,7 +2231,7 @@ function copiarCapturador(){
 
 
 /* ==========================================================
-INICIAR
+INICIALIZAÇÃO
 ========================================================== */
 
 carregarDados();
@@ -2319,6 +2239,7 @@ carregarDados();
 atualizarTela();
 
 </script>
+
 
 </body>
 
