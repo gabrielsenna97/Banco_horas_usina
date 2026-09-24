@@ -1,496 +1,1014 @@
-```html
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
 <title>UTE Maués - Gestão e Captura PIE</title>
 
 <style>
+
+/* ==========================================================
+   RESET
+========================================================== */
+
 *{
     box-sizing:border-box;
     margin:0;
     padding:0;
 }
 
+
+/* ==========================================================
+   BODY
+========================================================== */
+
 body{
-    font-family:Arial,Helvetica,sans-serif;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
     background:#f2f4f7;
+
     color:#1f2937;
+
 }
 
+
+/* ==========================================================
+   HEADER
+========================================================== */
+
 header{
+
     background:#111827;
+
     color:white;
+
     padding:20px;
+
 }
 
 header h1{
+
     font-size:22px;
+
 }
 
 header p{
+
     margin-top:5px;
+
     color:#d1d5db;
+
 }
+
+
+/* ==========================================================
+   CONTAINER
+========================================================== */
 
 .container{
+
     max-width:1400px;
+
     margin:auto;
+
     padding:20px;
+
 }
 
+
+/* ==========================================================
+   CARD
+========================================================== */
+
 .card{
+
     background:white;
+
     border-radius:12px;
+
     padding:18px;
+
     margin-bottom:18px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
+
+    box-shadow:
+        0 2px 8px rgba(0,0,0,.08);
+
 }
 
 .card h2{
+
     font-size:18px;
+
     margin-bottom:15px;
+
 }
+
+
+/* ==========================================================
+   GRID
+========================================================== */
 
 .grid{
+
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(180px,1fr)
+        );
+
     gap:12px;
+
 }
 
+
+/* ==========================================================
+   ESTATÍSTICAS
+========================================================== */
+
 .stat{
+
     background:#f9fafb;
+
     border:1px solid #e5e7eb;
+
     border-radius:10px;
+
     padding:15px;
+
 }
 
 .stat strong{
+
     display:block;
+
     font-size:25px;
+
     margin-top:5px;
+
 }
 
+
+/* ==========================================================
+   BOTÕES
+========================================================== */
+
 button{
+
     border:0;
+
     border-radius:8px;
+
     padding:11px 16px;
+
     cursor:pointer;
+
     font-weight:bold;
+
     margin:4px;
+
 }
 
 .btn-primary{
+
     background:#2563eb;
+
     color:white;
+
 }
 
 .btn-success{
+
     background:#16a34a;
+
     color:white;
+
 }
 
 .btn-warning{
+
     background:#f59e0b;
+
     color:white;
+
 }
 
 .btn-danger{
+
     background:#dc2626;
+
     color:white;
+
 }
 
 .btn-dark{
+
     background:#111827;
+
     color:white;
+
 }
 
 button:hover{
+
     opacity:.9;
+
 }
 
-input,textarea,select{
+
+/* ==========================================================
+   INPUTS
+========================================================== */
+
+input,
+textarea,
+select{
+
     width:100%;
+
     padding:10px;
-    border:1px solid #d1d5db;
+
+    border:
+        1px solid #d1d5db;
+
     border-radius:7px;
+
     margin-top:5px;
+
 }
 
 textarea{
-    min-height:180px;
+
+    min-height:150px;
+
     resize:vertical;
+
 }
 
 label{
+
     font-weight:bold;
+
     font-size:13px;
+
 }
+
+
+/* ==========================================================
+   FORM
+========================================================== */
 
 .form-grid{
+
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(220px,1fr)
+        );
+
     gap:12px;
+
 }
+
+
+/* ==========================================================
+   STATUS
+========================================================== */
 
 .status{
+
     padding:12px;
+
     background:#eff6ff;
-    border-left:4px solid #2563eb;
+
+    border-left:
+        4px solid #2563eb;
+
     border-radius:6px;
+
     margin-bottom:15px;
+
 }
 
+
+/* ==========================================================
+   PROGRESSO
+========================================================== */
+
 .progress{
+
     width:100%;
+
     height:22px;
+
     background:#e5e7eb;
+
     border-radius:20px;
+
     overflow:hidden;
+
     margin-top:10px;
+
 }
 
 .progress-bar{
+
     height:100%;
+
     width:0%;
+
     background:#2563eb;
+
     color:white;
+
     text-align:center;
+
     line-height:22px;
+
     font-size:12px;
+
     font-weight:bold;
+
+    transition:
+        width .3s;
+
 }
 
+
+/* ==========================================================
+   TABELA
+========================================================== */
+
 .table-wrap{
+
     overflow-x:auto;
+
 }
 
 table{
+
     width:100%;
+
     border-collapse:collapse;
-    min-width:1000px;
+
+    min-width:1200px;
+
 }
 
-th,td{
+th,
+td{
+
     padding:10px;
-    border-bottom:1px solid #e5e7eb;
+
+    border-bottom:
+        1px solid #e5e7eb;
+
     text-align:left;
+
     font-size:13px;
+
+    vertical-align:top;
+
 }
 
 th{
+
     background:#111827;
+
     color:white;
+
 }
 
 tr:hover{
+
     background:#f9fafb;
+
 }
 
+
+/* ==========================================================
+   BADGES
+========================================================== */
+
 .badge{
+
     display:inline-block;
+
     padding:5px 8px;
+
     border-radius:20px;
+
     font-size:11px;
+
     font-weight:bold;
+
 }
 
 .operando{
+
     background:#dcfce7;
+
     color:#166534;
+
 }
 
 .restricao{
+
     background:#fef3c7;
+
     color:#92400e;
+
 }
 
 .manutencao{
+
     background:#fed7aa;
+
     color:#9a3412;
+
 }
 
 .indisponivel{
+
     background:#fee2e2;
+
     color:#991b1b;
+
 }
 
 .disponivel{
+
     background:#dcfce7;
+
     color:#166534;
+
 }
 
+
+/* ==========================================================
+   MODAL
+========================================================== */
+
 .modal{
+
     display:none;
+
     position:fixed;
+
     inset:0;
-    background:rgba(0,0,0,.6);
+
+    background:
+        rgba(0,0,0,.6);
+
     z-index:9999;
+
     align-items:center;
+
     justify-content:center;
+
     padding:20px;
+
 }
 
 .modal-content{
+
     background:white;
+
     width:100%;
+
     max-width:850px;
+
     max-height:90vh;
+
     overflow:auto;
+
     border-radius:12px;
+
     padding:20px;
+
 }
 
 .modal-header{
+
     display:flex;
+
     justify-content:space-between;
+
     align-items:center;
+
     margin-bottom:15px;
+
 }
 
 .close{
+
     font-size:25px;
+
     cursor:pointer;
+
 }
 
-.empty{
-    text-align:center;
-    padding:30px;
-    color:#6b7280;
-}
+
+/* ==========================================================
+   PEQUENO
+========================================================== */
 
 .small{
+
     font-size:12px;
+
     color:#6b7280;
+
 }
 
-.copy-area{
-    margin-top:10px;
-}
+
+/* ==========================================================
+   MENSAGEM
+========================================================== */
 
 #mensagem{
+
     position:fixed;
+
     right:20px;
+
     bottom:20px;
+
     background:#111827;
+
     color:white;
+
     padding:12px 16px;
+
     border-radius:8px;
+
     display:none;
+
     z-index:10000;
+
+    max-width:350px;
+
 }
 
+
+/* ==========================================================
+   STATUS CAPTURA
+========================================================== */
+
+#statusCaptura{
+
+    margin-top:15px;
+
+    padding:12px;
+
+    border-radius:8px;
+
+    background:#f9fafb;
+
+    border:1px solid #e5e7eb;
+
+    font-size:13px;
+
+}
+
+
+/* ==========================================================
+   RESPONSIVO
+========================================================== */
+
 @media(max-width:600px){
+
     .container{
+
         padding:10px;
+
     }
 
     header{
+
         padding:15px;
+
     }
 
     header h1{
+
         font-size:18px;
+
     }
 
     button{
+
         width:100%;
+
         margin:3px 0;
+
     }
+
 }
+
 </style>
+
 </head>
+
 
 <body>
 
+
+<!-- ========================================================
+     HEADER
+========================================================= -->
+
 <header>
+
     <h1>UTE MAUÉS</h1>
-    <p>Gestão Diária • Captura PIE • Relatório Operacional</p>
+
+    <p>
+        Gestão Diária • Captura PIE • Relatório Operacional
+    </p>
+
 </header>
+
 
 <div class="container">
 
-    <!-- STATUS -->
-    <div class="card">
-        <div id="status" class="status">
-            Sistema carregado. Aguardando captura.
-        </div>
 
-        <div class="grid">
+<!-- ========================================================
+     RESUMO
+========================================================= -->
 
-            <div class="stat">
-                Total de UGDs
-                <strong id="totalUGD">0</strong>
-            </div>
+<div class="card">
 
-            <div class="stat">
-                Disponíveis
-                <strong id="totalDisponiveis">0</strong>
-            </div>
-
-            <div class="stat">
-                Operando
-                <strong id="totalOperando">0</strong>
-            </div>
-
-            <div class="stat">
-                Restrição
-                <strong id="totalRestricao">0</strong>
-            </div>
-
-            <div class="stat">
-                Manutenção
-                <strong id="totalManutencao">0</strong>
-            </div>
-
-            <div class="stat">
-                Indisponíveis
-                <strong id="totalIndisponivel">0</strong>
-            </div>
-
-        </div>
+    <div
+        id="status"
+        class="status"
+    >
+        Sistema carregado. Aguardando captura do Sankhya.
     </div>
 
 
-    <!-- CAPTURA -->
-    <div class="card">
+    <div class="grid">
 
-        <h2>📥 Captura Automática do PIE</h2>
 
-        <p class="small">
-            Use esta área para receber os dados capturados da tela do PIE.
-        </p>
+        <div class="stat">
 
-        <br>
+            Total de UGDs
 
-        <button class="btn-primary" onclick="capturarAtual()">
-            📥 LER UGD ATUAL
-        </button>
-
-        <button class="btn-success" onclick="abrirCapturaAutomatica()">
-            🔄 CAPTURAR TODAS AS UGDs
-        </button>
-
-        <button class="btn-dark" onclick="limparTudo()">
-            🗑️ LIMPAR DADOS
-        </button>
-
-        <div style="margin-top:15px">
-
-            <strong id="progressoTexto">
-                Progresso: 0 / 60
+            <strong id="totalUGD">
+                0
             </strong>
 
-            <div class="progress">
-                <div id="progressBar" class="progress-bar">
-                    0%
-                </div>
-            </div>
+        </div>
+
+
+        <div class="stat">
+
+            Disponíveis
+
+            <strong id="totalDisponiveis">
+                0
+            </strong>
 
         </div>
 
-    </div>
 
+        <div class="stat">
 
-    <!-- CONTROLES -->
-    <div class="card">
+            Operando
 
-        <h2>⚙️ Controle</h2>
-
-        <button class="btn-success" onclick="gerarRelatorio()">
-            📱 GERAR RELATÓRIO WHATSAPP
-        </button>
-
-        <button class="btn-primary" onclick="copiarWhatsApp()">
-            📋 COPIAR PARA WHATSAPP
-        </button>
-
-        <button class="btn-warning" onclick="exportarJSON()">
-            💾 EXPORTAR DADOS
-        </button>
-
-        <button class="btn-dark" onclick="document.getElementById('arquivoImportar').click()">
-            📂 IMPORTAR DADOS
-        </button>
-
-        <input
-            type="file"
-            id="arquivoImportar"
-            accept=".json"
-            style="display:none"
-            onchange="importarJSON(event)"
-        >
-
-    </div>
-
-
-    <!-- TABELA -->
-    <div class="card">
-
-        <h2>📊 UGDs Capturadas</h2>
-
-        <div class="table-wrap">
-
-            <table>
-
-                <thead>
-
-                    <tr>
-                        <th>UGD</th>
-                        <th>Equipamento</th>
-                        <th>Data</th>
-                        <th>HRM</th>
-                        <th>Status</th>
-                        <th>OS</th>
-                        <th>Causa</th>
-                        <th>Ação</th>
-                    </tr>
-
-                </thead>
-
-                <tbody id="tabelaRegistros">
-
-                </tbody>
-
-            </table>
+            <strong id="totalOperando">
+                0
+            </strong>
 
         </div>
 
-    </div>
+
+        <div class="stat">
+
+            Restrição
+
+            <strong id="totalRestricao">
+                0
+            </strong>
+
+        </div>
 
 
-    <!-- RELATÓRIO -->
-    <div class="card">
+        <div class="stat">
 
-        <h2>📱 Relatório para WhatsApp</h2>
+            Manutenção
 
-        <textarea id="relatorio"
-            placeholder="O relatório será gerado aqui..."></textarea>
+            <strong id="totalManutencao">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="stat">
+
+            Indisponíveis
+
+            <strong id="totalIndisponivel">
+                0
+            </strong>
+
+        </div>
+
 
     </div>
 
 </div>
 
 
-<!-- MENSAGEM -->
+<!-- ========================================================
+     CAPTURA
+========================================================= -->
+
+<div class="card">
+
+    <h2>
+        📥 Captura Automática do PIE
+    </h2>
+
+
+    <p class="small">
+
+        Os dados recebidos do capturador do Sankhya
+        são armazenados automaticamente neste navegador.
+
+    </p>
+
+
+    <br>
+
+
+    <button
+        class="btn-primary"
+        onclick="abrirModal()"
+    >
+
+        📥 LANÇAR UGD MANUALMENTE
+
+    </button>
+
+
+    <button
+        class="btn-success"
+        onclick="receberTeste()"
+    >
+
+        🧪 TESTAR RECEBIMENTO
+
+    </button>
+
+
+    <button
+        class="btn-warning"
+        onclick="sincronizarExtensao()"
+    >
+
+        🔄 ATUALIZAR DADOS
+
+    </button>
+
+
+    <button
+        class="btn-danger"
+        onclick="limparTudo()"
+    >
+
+        🗑️ LIMPAR DADOS
+
+    </button>
+
+
+    <div
+        id="statusCaptura"
+    >
+
+        Aguardando dados do capturador.
+
+    </div>
+
+
+    <br>
+
+
+    <strong id="progressoTexto">
+
+        Progresso: 0 / 60
+
+    </strong>
+
+
+    <div class="progress">
+
+        <div
+            id="progressBar"
+            class="progress-bar"
+        >
+
+            0%
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================
+     CONTROLES
+========================================================= -->
+
+<div class="card">
+
+    <h2>
+        ⚙️ Controle
+    </h2>
+
+
+    <button
+        class="btn-success"
+        onclick="gerarRelatorio()"
+    >
+
+        📱 GERAR RELATÓRIO WHATSAPP
+
+    </button>
+
+
+    <button
+        class="btn-primary"
+        onclick="copiarWhatsApp()"
+    >
+
+        📋 COPIAR PARA WHATSAPP
+
+    </button>
+
+
+    <button
+        class="btn-warning"
+        onclick="exportarJSON()"
+    >
+
+        💾 EXPORTAR DADOS
+
+    </button>
+
+
+    <button
+        class="btn-dark"
+        onclick="
+            document
+            .getElementById('arquivoImportar')
+            .click()
+        "
+    >
+
+        📂 IMPORTAR DADOS
+
+    </button>
+
+
+    <input
+        type="file"
+        id="arquivoImportar"
+        accept=".json"
+        style="display:none"
+        onchange="importarJSON(event)"
+    >
+
+</div>
+
+
+<!-- ========================================================
+     TABELA
+========================================================= -->
+
+<div class="card">
+
+    <h2>
+        📊 UGDs Capturadas
+    </h2>
+
+
+    <div class="table-wrap">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>UGD</th>
+
+                    <th>Equipamento</th>
+
+                    <th>Data</th>
+
+                    <th>HRM</th>
+
+                    <th>Status</th>
+
+                    <th>OS</th>
+
+                    <th>Causa</th>
+
+                    <th>Ocorrências</th>
+
+                    <th>Ação</th>
+
+                    <th>Previsão</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody
+                id="tabelaRegistros"
+            >
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================
+     RELATÓRIO
+========================================================= -->
+
+<div class="card">
+
+    <h2>
+        📱 Relatório para WhatsApp
+    </h2>
+
+
+    <textarea
+        id="relatorio"
+        placeholder="O relatório será gerado aqui..."
+    ></textarea>
+
+</div>
+
+
+</div>
+
+
+<!-- ========================================================
+     MENSAGEM
+========================================================= -->
+
 <div id="mensagem"></div>
 
 
-<!-- MODAL -->
-<div id="modalCaptura" class="modal">
+<!-- ========================================================
+     MODAL
+========================================================= -->
+
+<div
+    id="modalCaptura"
+    class="modal"
+>
+
 
     <div class="modal-content">
 
+
         <div class="modal-header">
 
-            <h2>📥 Capturar UGD</h2>
+            <h2>
+                📥 Cadastro de UGD
+            </h2>
+
 
             <span
                 class="close"
-                onclick="fecharModal()">
+                onclick="fecharModal()"
+            >
+
                 ×
+
             </span>
 
         </div>
@@ -498,71 +1016,164 @@ tr:hover{
 
         <div class="form-grid">
 
-            <div>
-                <label>UGD</label>
-                <input id="campoUGD" placeholder="UGD-01">
-            </div>
 
             <div>
-                <label>Equipamento</label>
-                <input id="campoEquipamento">
+
+                <label>
+                    UGD
+                </label>
+
+                <input
+                    id="campoUGD"
+                    placeholder="UGD-01"
+                >
+
             </div>
 
-            <div>
-                <label>Data</label>
-                <input id="campoData" type="date">
-            </div>
 
             <div>
-                <label>HRM</label>
-                <input id="campoHRM">
+
+                <label>
+                    Equipamento
+                </label>
+
+                <input
+                    id="campoEquipamento"
+                >
+
             </div>
 
-            <div>
-                <label>Status</label>
-                <input id="campoStatus">
-            </div>
 
             <div>
-                <label>OS</label>
-                <input id="campoOS">
+
+                <label>
+                    Data
+                </label>
+
+                <input
+                    id="campoData"
+                    type="date"
+                >
+
             </div>
 
-            <div>
-                <label>Causa</label>
-                <textarea id="campoCausa"></textarea>
-            </div>
 
             <div>
-                <label>Ocorrências</label>
-                <textarea id="campoOcorrencias"></textarea>
+
+                <label>
+                    HRM
+                </label>
+
+                <input
+                    id="campoHRM"
+                >
+
             </div>
 
-            <div>
-                <label>Ação</label>
-                <textarea id="campoAcao"></textarea>
-            </div>
 
             <div>
-                <label>Previsão de retorno</label>
-                <input id="campoPrevisao">
+
+                <label>
+                    Status
+                </label>
+
+                <input
+                    id="campoStatus"
+                >
+
             </div>
+
+
+            <div>
+
+                <label>
+                    OS
+                </label>
+
+                <input
+                    id="campoOS"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>
+                    Causa
+                </label>
+
+                <textarea
+                    id="campoCausa"
+                ></textarea>
+
+            </div>
+
+
+            <div>
+
+                <label>
+                    Ocorrências
+                </label>
+
+                <textarea
+                    id="campoOcorrencias"
+                ></textarea>
+
+            </div>
+
+
+            <div>
+
+                <label>
+                    Ação
+                </label>
+
+                <textarea
+                    id="campoAcao"
+                ></textarea>
+
+            </div>
+
+
+            <div>
+
+                <label>
+                    Previsão de retorno
+                </label>
+
+                <input
+                    id="campoPrevisao"
+                >
+
+            </div>
+
 
         </div>
 
+
         <br>
+
 
         <button
             class="btn-success"
-            onclick="salvarCaptura()">
+            onclick="salvarCaptura()"
+        >
+
             💾 SALVAR UGD
+
         </button>
+
 
         <button
             class="btn-danger"
-            onclick="fecharModal()">
+            onclick="fecharModal()"
+        >
+
             CANCELAR
+
         </button>
+
 
     </div>
 
@@ -575,15 +1186,18 @@ tr:hover{
    CONFIGURAÇÃO
 ========================================================== */
 
-const STORAGE_KEY = "UTE_MAUES_PIE_HTML";
+const STORAGE_KEY =
+    "UTE_MAUES_PIE_HTML_V2";
+
+
+const TOTAL_UGD = 60;
+
 
 let registros = [];
 
-let capturandoTodas = false;
-
 
 /* ==========================================================
-   CADASTRO DAS 60 UGDs
+   EQUIPAMENTOS
 ========================================================== */
 
 const equipamentos = {
@@ -656,19 +1270,26 @@ const equipamentos = {
    INICIALIZAÇÃO
 ========================================================== */
 
-window.onload = function(){
+window.addEventListener(
+    "load",
+    function(){
 
-    carregarDados();
+        carregarDados();
 
-    atualizarTela();
+        atualizarTela();
 
-    gerarRelatorio();
+        gerarRelatorio();
 
-};
+        atualizarStatus(
+            "Sistema pronto. Aguardando dados do Sankhya."
+        );
+
+    }
+);
 
 
 /* ==========================================================
-   LOCAL STORAGE
+   STORAGE
 ========================================================== */
 
 function carregarDados(){
@@ -676,12 +1297,20 @@ function carregarDados(){
     try{
 
         const dados =
-            localStorage.getItem(STORAGE_KEY);
+            localStorage.getItem(
+                STORAGE_KEY
+            );
 
         if(dados){
 
-            registros =
+            const parsed =
                 JSON.parse(dados);
+
+            if(Array.isArray(parsed)){
+
+                registros = parsed;
+
+            }
 
         }
 
@@ -697,8 +1326,13 @@ function carregarDados(){
 function salvarDados(){
 
     localStorage.setItem(
+
         STORAGE_KEY,
-        JSON.stringify(registros)
+
+        JSON.stringify(
+            registros
+        )
+
     );
 
 }
@@ -711,17 +1345,64 @@ function salvarDados(){
 function mensagem(texto){
 
     const el =
-        document.getElementById("mensagem");
+        document.getElementById(
+            "mensagem"
+        );
 
-    el.textContent = texto;
+    el.textContent =
+        texto;
 
-    el.style.display = "block";
+    el.style.display =
+        "block";
 
-    setTimeout(function(){
 
-        el.style.display = "none";
+    setTimeout(
+        function(){
 
-    },2500);
+            el.style.display =
+                "none";
+
+        },
+        2500
+    );
+
+}
+
+
+/* ==========================================================
+   STATUS
+========================================================== */
+
+function atualizarStatus(texto){
+
+    const el =
+        document.getElementById(
+            "status"
+        );
+
+    if(el){
+
+        el.textContent =
+            texto;
+
+    }
+
+}
+
+
+function atualizarStatusCaptura(texto){
+
+    const el =
+        document.getElementById(
+            "statusCaptura"
+        );
+
+    if(el){
+
+        el.textContent =
+            texto;
+
+    }
 
 }
 
@@ -732,21 +1413,117 @@ function mensagem(texto){
 
 function limparHRM(valor){
 
-    if(!valor) return "";
+    if(!valor)
+        return "";
+
 
     let v =
         String(valor)
-        .replace(/acréscimos?/gi,"")
-        .replace(/acrescimos?/gi,"")
-        .replace(/HRM/gi,"")
-        .replace(/:/g,"")
-        .trim();
+            .replace(
+                /acréscimos?/gi,
+                ""
+            )
+            .replace(
+                /acrescimos?/gi,
+                ""
+            )
+            .replace(
+                /HRM/gi,
+                ""
+            )
+            .replace(
+                /:/g,
+                ""
+            )
+            .trim();
 
-    v = v.replace(/[^\d.,]/g,"");
 
-    v = v.replace(/\./g,"");
+    v =
+        v.replace(
+            /[^\d.,]/g,
+            ""
+        );
 
-    v = v.replace(",", ".");
+
+    if(
+        v.includes(",") &&
+        v.includes(".")
+    ){
+
+        if(
+            v.lastIndexOf(",") >
+            v.lastIndexOf(".")
+        ){
+
+            v =
+                v.replace(
+                    /\./g,
+                    ""
+                );
+
+            v =
+                v.replace(
+                    ",",
+                    "."
+                );
+
+        }else{
+
+            v =
+                v.replace(
+                    /,/g,
+                    ""
+                );
+
+        }
+
+    }else if(
+        v.includes(",")
+    ){
+
+        const partes =
+            v.split(",");
+
+        if(
+            partes[1] &&
+            partes[1].length <= 2
+        ){
+
+            v =
+                partes[0];
+
+        }else{
+
+            v =
+                v.replace(
+                    ",",
+                    ""
+                );
+
+        }
+
+    }else if(
+        v.includes(".")
+    ){
+
+        const partes =
+            v.split(".");
+
+        if(
+            partes.length === 2 &&
+            partes[1].length === 3
+        ){
+
+            v =
+                v.replace(
+                    ".",
+                    ""
+                );
+
+        }
+
+    }
+
 
     return v;
 
@@ -754,12 +1531,249 @@ function limparHRM(valor){
 
 
 /* ==========================================================
-   CAPTURAR ATUAL
+   NÚMERO UGD
 ========================================================== */
 
-function capturarAtual(){
+function numeroUGD(ugd){
 
-    abrirModal();
+    const m =
+        String(ugd || "")
+            .match(
+                /\d+/
+            );
+
+    return m
+        ? Number(m[0])
+        : 999;
+
+}
+
+
+/* ==========================================================
+   DATA
+========================================================== */
+
+function hojeISO(){
+
+    const d =
+        new Date();
+
+    const ano =
+        d.getFullYear();
+
+    const mes =
+        String(
+            d.getMonth() + 1
+        ).padStart(
+            2,
+            "0"
+        );
+
+    const dia =
+        String(
+            d.getDate()
+        ).padStart(
+            2,
+            "0"
+        );
+
+    return (
+        ano +
+        "-" +
+        mes +
+        "-" +
+        dia
+    );
+
+}
+
+
+function formatarData(data){
+
+    if(!data)
+        return "";
+
+
+    if(
+        /^\d{4}-\d{2}-\d{2}$/
+            .test(data)
+    ){
+
+        const p =
+            data.split("-");
+
+        return (
+            p[2] +
+            "/" +
+            p[1] +
+            "/" +
+            p[0]
+        );
+
+    }
+
+
+    return data;
+
+}
+
+
+/* ==========================================================
+   ESCAPE
+========================================================== */
+
+function esc(valor){
+
+    return String(
+        valor ?? ""
+    )
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+    .replace(
+        /</g,
+        "&lt;"
+    )
+    .replace(
+        />/g,
+        "&gt;"
+    )
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+    .replace(
+        /'/g,
+        "&#039;"
+    );
+
+}
+
+
+/* ==========================================================
+   STATUS NORMALIZADO
+========================================================== */
+
+function normalizarStatus(status){
+
+    return String(
+        status || ""
+    )
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(
+        /[\u0300-\u036f]/g,
+        ""
+    )
+    .trim();
+
+}
+
+
+function classeStatus(status){
+
+    const s =
+        normalizarStatus(
+            status
+        );
+
+
+    if(
+        s.includes(
+            "restricao"
+        )
+    )
+        return "restricao";
+
+
+    if(
+        s.includes(
+            "manutencao"
+        )
+    )
+        return "manutencao";
+
+
+    if(
+        s.includes(
+            "indisponivel"
+        )
+    )
+        return "indisponivel";
+
+
+    if(
+        s === "disponivel"
+    )
+        return "disponivel";
+
+
+    if(
+        s.includes(
+            "operando"
+        )
+    )
+        return "operando";
+
+
+    return "";
+
+}
+
+
+/* ==========================================================
+   EMOJI
+========================================================== */
+
+function emojiStatus(status){
+
+    const s =
+        normalizarStatus(
+            status
+        );
+
+
+    if(
+        s.includes(
+            "indisponivel"
+        ) ||
+        s.includes(
+            "manutencao"
+        )
+    ){
+
+        return "🔴";
+
+    }
+
+
+    if(
+        s.includes(
+            "restricao"
+        )
+    ){
+
+        return "🟡";
+
+    }
+
+
+    if(
+        s.includes(
+            "operando"
+        ) ||
+        s.includes(
+            "disponivel"
+        )
+    ){
+
+        return "🟢";
+
+    }
+
+
+    return "⚪";
 
 }
 
@@ -770,91 +1784,270 @@ function capturarAtual(){
 
 function abrirModal(){
 
-    document.getElementById("modalCaptura")
-        .style.display = "flex";
+    document.getElementById(
+        "modalCaptura"
+    ).style.display =
+        "flex";
+
+
+    document.getElementById(
+        "campoData"
+    ).value =
+        hojeISO();
 
 }
 
 
 function fecharModal(){
 
-    document.getElementById("modalCaptura")
-        .style.display = "none";
+    document.getElementById(
+        "modalCaptura"
+    ).style.display =
+        "none";
 
 }
 
 
 /* ==========================================================
-   SALVAR CAPTURA
+   SALVAR MANUAL
 ========================================================== */
 
 function salvarCaptura(){
 
     const ugd =
-        document.getElementById("campoUGD").value.trim();
+        document
+            .getElementById(
+                "campoUGD"
+            )
+            .value
+            .trim()
+            .toUpperCase();
+
 
     if(!ugd){
 
-        mensagem("Informe a UGD.");
+        mensagem(
+            "Informe a UGD."
+        );
 
         return;
 
     }
 
+
     const registro = {
 
-        ugd: ugd,
+        ugd:
+
+            ugd,
 
         equipamento:
-            document.getElementById("campoEquipamento").value.trim()
-            || equipamentos[ugd]
-            || "",
+
+            document
+                .getElementById(
+                    "campoEquipamento"
+                )
+                .value
+                .trim()
+            ||
+            equipamentos[ugd]
+            ||
+            "",
 
         data:
-            document.getElementById("campoData").value,
+
+            document
+                .getElementById(
+                    "campoData"
+                )
+                .value
+            ||
+            hojeISO(),
 
         hrm:
+
             limparHRM(
-                document.getElementById("campoHRM").value
+                document
+                    .getElementById(
+                        "campoHRM"
+                    )
+                    .value
             ),
 
         status:
-            document.getElementById("campoStatus").value.trim(),
+
+            document
+                .getElementById(
+                    "campoStatus"
+                )
+                .value
+                .trim(),
 
         os:
-            document.getElementById("campoOS").value.trim(),
+
+            document
+                .getElementById(
+                    "campoOS"
+                )
+                .value
+                .trim(),
 
         causa:
-            document.getElementById("campoCausa").value.trim(),
+
+            document
+                .getElementById(
+                    "campoCausa"
+                )
+                .value
+                .trim(),
 
         ocorrencias:
-            document.getElementById("campoOcorrencias").value.trim(),
+
+            document
+                .getElementById(
+                    "campoOcorrencias"
+                )
+                .value
+                .trim(),
 
         acao:
-            document.getElementById("campoAcao").value.trim(),
+
+            document
+                .getElementById(
+                    "campoAcao"
+                )
+                .value
+                .trim(),
 
         previsao:
-            document.getElementById("campoPrevisao").value.trim(),
+
+            document
+                .getElementById(
+                    "campoPrevisao"
+                )
+                .value
+                .trim(),
 
         atualizado:
-            new Date().toISOString()
+
+            new Date()
+                .toISOString()
 
     };
 
 
+    inserirRegistro(
+        registro
+    );
+
+
+    fecharModal();
+
+    limparFormulario();
+
+    mensagem(
+        ugd +
+        " salva com sucesso."
+    );
+
+}
+
+
+/* ==========================================================
+   INSERIR / ATUALIZAR
+========================================================== */
+
+function inserirRegistro(
+    registro
+){
+
+    if(
+        !registro ||
+        !registro.ugd
+    )
+        return;
+
+
+    registro.ugd =
+        String(
+            registro.ugd
+        )
+        .trim()
+        .toUpperCase();
+
+
+    if(
+        !/^UGD-\d{1,2}$/.test(
+            registro.ugd
+        )
+    ){
+
+        const numero =
+            numeroUGD(
+                registro.ugd
+            );
+
+        if(
+            numero >= 1 &&
+            numero <= 60
+        ){
+
+            registro.ugd =
+                "UGD-" +
+                String(numero)
+                    .padStart(
+                        2,
+                        "0"
+                    );
+
+        }
+
+    }
+
+
+    if(
+        !registro.equipamento
+    ){
+
+        registro.equipamento =
+            equipamentos[
+                registro.ugd
+            ] || "";
+
+    }
+
+
+    registro.hrm =
+        limparHRM(
+            registro.hrm
+        );
+
+
     const indice =
         registros.findIndex(
-            r => r.ugd === ugd
+            r =>
+                String(
+                    r.ugd
+                ).toUpperCase() ===
+                registro.ugd
         );
 
 
     if(indice >= 0){
 
-        registros[indice] = registro;
+        registros[indice] = {
+
+            ...registros[indice],
+
+            ...registro
+
+        };
 
     }else{
 
-        registros.push(registro);
+        registros.push(
+            registro
+        );
 
     }
 
@@ -872,25 +2065,45 @@ function salvarCaptura(){
 
     gerarRelatorio();
 
-    fecharModal();
-
-    mensagem(
-        ugd + " salva com sucesso."
+    atualizarStatusCaptura(
+        registro.ugd +
+        " recebido e salvo automaticamente."
     );
 
 }
 
 
 /* ==========================================================
-   NÚMERO UGD
+   LIMPAR FORMULÁRIO
 ========================================================== */
 
-function numeroUGD(ugd){
+function limparFormulario(){
 
-    const m =
-        String(ugd || "").match(/\d+/);
+    [
+        "campoUGD",
+        "campoEquipamento",
+        "campoData",
+        "campoHRM",
+        "campoStatus",
+        "campoOS",
+        "campoCausa",
+        "campoOcorrencias",
+        "campoAcao",
+        "campoPrevisao"
+    ]
+    .forEach(
+        id => {
 
-    return m ? Number(m[0]) : 999;
+            const el =
+                document.getElementById(
+                    id
+                );
+
+            if(el)
+                el.value = "";
+
+        }
+    );
 
 }
 
@@ -902,312 +2115,302 @@ function numeroUGD(ugd){
 function atualizarTela(){
 
     const tabela =
-        document.getElementById("tabelaRegistros");
+        document.getElementById(
+            "tabelaRegistros"
+        );
+
 
     tabela.innerHTML = "";
 
 
     let disponiveis = 0;
+
     let operando = 0;
+
     let restricao = 0;
+
     let manutencao = 0;
+
     let indisponivel = 0;
 
 
-    registros.forEach(function(r){
+    registros
+        .slice()
+        .sort(
+            (a,b) =>
+                numeroUGD(a.ugd) -
+                numeroUGD(b.ugd)
+        )
+        .forEach(
+            function(r){
 
-        const tr =
-            document.createElement("tr");
-
-
-        tr.innerHTML = `
-
-            <td><strong>${esc(r.ugd)}</strong></td>
-
-            <td>${esc(r.equipamento)}</td>
-
-            <td>${esc(formatarData(r.data))}</td>
-
-            <td>${esc(r.hrm || "-")}</td>
-
-            <td>
-                <span class="badge ${classeStatus(r.status)}">
-                    ${esc(r.status || "-")}
-                </span>
-            </td>
-
-            <td>${esc(r.os || "-")}</td>
-
-            <td>${esc(r.causa || r.ocorrencias || "-")}</td>
-
-            <td>${esc(r.acao || "-")}</td>
-
-        `;
+                const tr =
+                    document.createElement(
+                        "tr"
+                    );
 
 
-        tabela.appendChild(tr);
+                tr.innerHTML = `
+
+                    <td>
+                        <strong>
+                            ${esc(r.ugd)}
+                        </strong>
+                    </td>
+
+                    <td>
+                        ${esc(
+                            r.equipamento
+                        )}
+                    </td>
+
+                    <td>
+                        ${esc(
+                            formatarData(
+                                r.data
+                            )
+                        )}
+                    </td>
+
+                    <td>
+                        ${esc(
+                            r.hrm || "-"
+                        )}
+                    </td>
+
+                    <td>
+
+                        <span
+                            class="
+                                badge
+                                ${classeStatus(
+                                    r.status
+                                )}
+                            "
+                        >
+
+                            ${esc(
+                                r.status || "-"
+                            )}
+
+                        </span>
+
+                    </td>
+
+                    <td>
+                        ${esc(
+                            r.os || "-"
+                        )}
+                    </td>
+
+                    <td>
+                        ${esc(
+                            r.causa || "-"
+                        )}
+                    </td>
+
+                    <td>
+                        ${esc(
+                            r.ocorrencias || "-"
+                        )}
+                    </td>
+
+                    <td>
+                        ${esc(
+                            r.acao || "-"
+                        )}
+                    </td>
+
+                    <td>
+                        ${esc(
+                            r.previsao || "-"
+                        )}
+                    </td>
+
+                `;
 
 
-        const s =
-            normalizarStatus(r.status);
+                tabela.appendChild(
+                    tr
+                );
 
 
-        if(s.includes("disponivel")){
-
-            disponiveis++;
-
-        }else if(
-            s.includes("restricao")
-            ||
-            s.includes("restrição")
-        ){
-
-            restricao++;
-
-        }else if(
-            s.includes("manutencao")
-            ||
-            s.includes("manutenção")
-        ){
-
-            manutencao++;
-
-        }else if(
-            s.includes("indisponivel")
-            ||
-            s.includes("indisponível")
-        ){
-
-            indisponivel++;
-
-        }else if(
-            s.includes("operando")
-            ||
-            s === "op"
-        ){
-
-            operando++;
-
-        }
-
-    });
+                const s =
+                    normalizarStatus(
+                        r.status
+                    );
 
 
-    document.getElementById("totalUGD")
-        .textContent = registros.length;
+                if(
+                    s ===
+                    "disponivel"
+                ){
 
-    document.getElementById("totalDisponiveis")
-        .textContent = disponiveis;
+                    disponiveis++;
 
-    document.getElementById("totalOperando")
-        .textContent = operando;
+                }
+                else if(
+                    s.includes(
+                        "restricao"
+                    )
+                ){
 
-    document.getElementById("totalRestricao")
-        .textContent = restricao;
+                    restricao++;
 
-    document.getElementById("totalManutencao")
-        .textContent = manutencao;
+                }
+                else if(
+                    s.includes(
+                        "manutencao"
+                    )
+                ){
 
-    document.getElementById("totalIndisponivel")
-        .textContent = indisponivel;
+                    manutencao++;
+
+                }
+                else if(
+                    s.includes(
+                        "indisponivel"
+                    )
+                ){
+
+                    indisponivel++;
+
+                }
+                else if(
+                    s.includes(
+                        "operando"
+                    ) ||
+                    s === "op"
+                ){
+
+                    operando++;
+
+                }
+
+            }
+        );
+
+
+    document.getElementById(
+        "totalUGD"
+    ).textContent =
+        registros.length;
+
+
+    document.getElementById(
+        "totalDisponiveis"
+    ).textContent =
+        disponiveis;
+
+
+    document.getElementById(
+        "totalOperando"
+    ).textContent =
+        operando;
+
+
+    document.getElementById(
+        "totalRestricao"
+    ).textContent =
+        restricao;
+
+
+    document.getElementById(
+        "totalManutencao"
+    ).textContent =
+        manutencao;
+
+
+    document.getElementById(
+        "totalIndisponivel"
+    ).textContent =
+        indisponivel;
 
 
     const percentual =
         Math.round(
-            (registros.length / 60) * 100
+            (
+                registros.length /
+                TOTAL_UGD
+            ) *
+            100
         );
 
 
-    document.getElementById("progressBar")
-        .style.width =
-            Math.min(percentual,100) + "%";
-
-    document.getElementById("progressBar")
-        .textContent =
-            Math.min(percentual,100) + "%";
-
-
-    document.getElementById("progressoTexto")
-        .textContent =
-            "Progresso: " +
-            registros.length +
-            " / 60";
-
-}
+    document.getElementById(
+        "progressBar"
+    ).style.width =
+        Math.min(
+            percentual,
+            100
+        ) + "%";
 
 
-/* ==========================================================
-   STATUS
-========================================================== */
-
-function normalizarStatus(status){
-
-    return String(status || "")
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g,"")
-        .trim();
-
-}
+    document.getElementById(
+        "progressBar"
+    ).textContent =
+        Math.min(
+            percentual,
+            100
+        ) + "%";
 
 
-function classeStatus(status){
-
-    const s =
-        normalizarStatus(status);
-
-
-    if(s.includes("restricao"))
-        return "restricao";
-
-    if(s.includes("manutencao"))
-        return "manutencao";
-
-    if(s.includes("indisponivel"))
-        return "indisponivel";
-
-    if(s.includes("disponivel"))
-        return "disponivel";
-
-    if(s.includes("operando"))
-        return "operando";
-
-    return "";
+    document.getElementById(
+        "progressoTexto"
+    ).textContent =
+        "Progresso: " +
+        registros.length +
+        " / " +
+        TOTAL_UGD;
 
 }
 
 
 /* ==========================================================
-   FORMATA DATA
+   RECEBER UM REGISTRO
 ========================================================== */
 
-function formatarData(data){
-
-    if(!data)
-        return "";
-
-    if(
-        /^\d{4}-\d{2}-\d{2}$/.test(data)
-    ){
-
-        const partes =
-            data.split("-");
-
-        return partes[2] +
-            "/" +
-            partes[1] +
-            "/" +
-            partes[0];
-
-    }
-
-    return data;
-
-}
-
-
-/* ==========================================================
-   ESC
-========================================================== */
-
-function esc(valor){
-
-    return String(valor ?? "")
-        .replace(/&/g,"&amp;")
-        .replace(/</g,"&lt;")
-        .replace(/>/g,"&gt;")
-        .replace(/"/g,"&quot;")
-        .replace(/'/g,"&#039;");
-
-}
-
-
-/* ==========================================================
-   CAPTURA AUTOMÁTICA
-========================================================== */
-
-function abrirCapturaAutomatica(){
-
-    alert(
-        "A captura automática precisa ser executada na página do PIE do Sankhya. " +
-        "O GitHub não consegue acessar diretamente outra aba por segurança do navegador."
-    );
-
-}
-
-
-/* ==========================================================
-   RECEBER DADOS DO CAPTURADOR
-========================================================== */
-
-/*
-    Esta função fica disponível para receber um objeto
-    enviado pelo capturador.
-
-    Exemplo:
-
-    window.receberDadosPIE({
-        ugd:"UGD-01",
-        equipamento:"UTE 550 0024R",
-        hrm:"22438",
-        status:"Operando",
-        os:"272206",
-        causa:"Motor de partida...",
-        ocorrencias:"",
-        acao:"..."
-    });
-*/
-
-window.receberDadosPIE = function(dados){
+window.receberDadosPIE =
+function(dados){
 
     if(!dados)
         return;
 
 
-    let ugd =
-        dados.ugd ||
-        dados.UGD ||
-        "";
-
-
-    if(!ugd){
-
-        mensagem("UGD não identificada.");
-
-        return;
-
-    }
-
-
     const registro = {
 
-        ugd: ugd,
+        ugd:
+            dados.ugd ||
+            dados.UGD ||
+            "",
 
         equipamento:
             dados.equipamento ||
             dados.equip ||
-            equipamentos[ugd] ||
             "",
 
         data:
             dados.data ||
-            "",
+            dados.DATA ||
+            hojeISO(),
 
         hrm:
-            limparHRM(
-                dados.hrm ||
-                dados.HRM ||
-                ""
-            ),
+            dados.hrm ||
+            dados.HRM ||
+            "",
 
         status:
             dados.status ||
             dados.STATUS ||
+            dados.statusOperacao ||
+            dados.STATUS_OPERACAO ||
             "",
 
         os:
             dados.os ||
             dados.OS ||
+            dados.numOS ||
+            dados.NUM_OS ||
             "",
 
         causa:
@@ -1227,102 +2430,278 @@ window.receberDadosPIE = function(dados){
 
         previsao:
             dados.previsao ||
+            dados.PREVISAO ||
+            "",
+
+        garantia:
+            dados.garantia ||
+            dados.GARANTIA ||
+            "",
+
+        statusAcao:
+            dados.statusAcao ||
+            dados.STATUS_ACAO ||
             "",
 
         atualizado:
-            new Date().toISOString()
+            new Date()
+                .toISOString()
 
     };
 
 
-    const indice =
-        registros.findIndex(
-            r => r.ugd === ugd
+    if(!registro.ugd){
+
+        mensagem(
+            "Registro recebido sem UGD."
         );
 
-
-    if(indice >= 0){
-
-        registros[indice] = {
-            ...registros[indice],
-            ...registro
-        };
-
-    }else{
-
-        registros.push(registro);
+        return;
 
     }
 
 
-    registros.sort(
-        (a,b) =>
-            numeroUGD(a.ugd) -
-            numeroUGD(b.ugd)
+    inserirRegistro(
+        registro
     );
 
 
-    salvarDados();
-
-    atualizarTela();
-
-    gerarRelatorio();
-
-    mensagem(
-        ugd + " capturada automaticamente."
+    atualizarStatus(
+        "Dados recebidos do Sankhya: " +
+        registro.ugd
     );
 
 };
 
 
 /* ==========================================================
-   RECEBER VÁRIAS UGDs
+   RECEBER LISTA
 ========================================================== */
 
-window.receberListaPIE = function(lista){
+window.receberListaPIE =
+function(lista){
 
-    if(!Array.isArray(lista))
+    if(
+        !Array.isArray(
+            lista
+        )
+    )
         return;
 
 
-    lista.forEach(function(dados){
+    let quantidade = 0;
 
-        window.receberDadosPIE(dados);
 
-    });
+    lista.forEach(
+        function(dados){
+
+            if(
+                dados &&
+                (
+                    dados.ugd ||
+                    dados.UGD
+                )
+            ){
+
+                window.receberDadosPIE(
+                    dados
+                );
+
+                quantidade++;
+
+            }
+
+        }
+    );
+
+
+    atualizarStatus(
+        quantidade +
+        " registros recebidos do Sankhya."
+    );
 
 
     mensagem(
-        lista.length +
-        " registros recebidos."
+        quantidade +
+        " UGDs recebidas."
     );
 
 };
 
 
 /* ==========================================================
-   GERAR RELATÓRIO
+   POSTMESSAGE
+========================================================== */
+
+window.addEventListener(
+    "message",
+    function(event){
+
+        if(
+            !event.data
+        )
+            return;
+
+
+        if(
+            event.data.tipo !==
+            "UTE_MAUES_PIE"
+        )
+            return;
+
+
+        if(
+            Array.isArray(
+                event.data.dados
+            )
+        ){
+
+            window.receberListaPIE(
+                event.data.dados
+            );
+
+        }else{
+
+            window.receberDadosPIE(
+                event.data.dados
+            );
+
+        }
+
+    }
+);
+
+
+/* ==========================================================
+   EVENTO CUSTOMIZADO
+========================================================== */
+
+window.addEventListener(
+    "ute-pie-dados",
+    function(event){
+
+        if(
+            event.detail
+        ){
+
+            window.receberDadosPIE(
+                event.detail
+            );
+
+        }
+
+    }
+);
+
+
+/* ==========================================================
+   TESTE
+========================================================== */
+
+function receberTeste(){
+
+    const teste = {
+
+        ugd:
+            "UGD-01",
+
+        equipamento:
+            equipamentos["UGD-01"],
+
+        data:
+            hojeISO(),
+
+        hrm:
+            "22438",
+
+        status:
+            "Operando com restrição",
+
+        os:
+            "272206",
+
+        causa:
+            "Motor de partida com a planetária quebrada.",
+
+        ocorrencias:
+            "Solenóide com desgaste na parte interna e pinhão da planetária travando.",
+
+        acao:
+            "",
+
+        previsao:
+            ""
+
+    };
+
+
+    window.receberDadosPIE(
+        teste
+    );
+
+}
+
+
+/* ==========================================================
+   SINCRONIZAR EXTENSÃO
+========================================================== */
+
+function sincronizarExtensao(){
+
+    /*
+       O painel GitHub não acessa diretamente o
+       chrome.storage da extensão.
+
+       Esta função tenta solicitar os dados através
+       do canal postMessage caso o capturador esteja
+       conectado à página.
+    */
+
+    window.postMessage({
+
+        tipo:
+            "UTE_MAUES_SOLICITAR_DADOS"
+
+    },"*");
+
+
+    atualizarStatus(
+        "Solicitando dados ao capturador..."
+    );
+
+
+    atualizarStatusCaptura(
+        "Aguardando resposta da extensão."
+    );
+
+}
+
+
+/* ==========================================================
+   RELATÓRIO WHATSAPP
 ========================================================== */
 
 function gerarRelatorio(){
 
     let texto = "";
 
-    const dataHoje =
-        new Date();
-
 
     const data =
-        dataHoje.toLocaleDateString(
-            "pt-BR"
-        );
+        new Date()
+            .toLocaleDateString(
+                "pt-BR"
+            );
 
 
-    texto += "*UTE MAUÉS*\n\n";
+    texto +=
+        "*UTE MAUÉS*\n\n";
 
-    texto += "*DATA*: _" +
+
+    texto +=
+        "*DATA*: _" +
         data +
         "_\n\n";
+
 
     texto +=
         "*STATUS DE DISPONIBILIDADE, HORÍMETRO E HORAS DE OPERAÇÃO DAS UGDs*\n\n";
@@ -1335,140 +2714,143 @@ function gerarRelatorio(){
                 numeroUGD(a.ugd) -
                 numeroUGD(b.ugd)
         )
-        .forEach(function(r){
-
-            texto +=
-                emojiStatus(r.status) +
-                "*" +
-                r.ugd +
-                " " +
-                (r.equipamento || "") +
-                "*\n";
-
-
-            if(r.status){
+        .forEach(
+            function(r){
 
                 texto +=
-                    r.status.toUpperCase() +
+                    emojiStatus(
+                        r.status
+                    ) +
+                    "*" +
+                    r.ugd +
+                    " " +
+                    (
+                        r.equipamento ||
+                        ""
+                    ) +
+                    "*\n";
+
+
+                if(r.status){
+
+                    texto +=
+                        r.status
+                            .toUpperCase() +
+                        "\n";
+
+                }
+
+
+                if(r.hrm){
+
+                    texto +=
+                        "HRM- " +
+                        r.hrm +
+                        "\n";
+
+                }
+
+
+                if(r.os){
+
+                    texto +=
+                        "(OS " +
+                        r.os +
+                        ") ";
+
+                }
+
+
+                let descricao =
+                    "";
+
+
+                if(r.causa){
+
+                    descricao +=
+                        r.causa;
+
+                }
+
+
+                if(r.ocorrencias){
+
+                    if(
+                        descricao
+                    ){
+
+                        descricao +=
+                            " ";
+
+                    }
+
+
+                    descricao +=
+                        r.ocorrencias;
+
+                }
+
+
+                if(descricao){
+
+                    texto +=
+                        descricao +
+                        "\n";
+
+                }
+
+
+                if(r.acao){
+
+                    texto +=
+                        "AÇÃO: " +
+                        r.acao +
+                        "\n";
+
+                }
+
+
+                if(r.previsao){
+
+                    texto +=
+                        "PREVISÃO DE RETORNO: " +
+                        r.previsao +
+                        "\n";
+
+                }
+
+
+                texto +=
                     "\n";
 
             }
+        );
 
 
-            if(r.hrm){
+    if(
+        registros.length === 0
+    ){
 
-                texto +=
-                    "HRM- " +
-                    r.hrm +
-                    "\n";
+        texto =
+            "*UTE MAUÉS*\n\n" +
+            "*DATA*: _" +
+            data +
+            "_\n\n" +
+            "Nenhum dado capturado ainda.";
 
-            }
-
-
-            if(r.os){
-
-                texto +=
-                    "(OS " +
-                    r.os +
-                    ") ";
-
-            }
+    }
 
 
-            let descricao = "";
-
-
-            if(r.causa)
-                descricao += r.causa;
-
-
-            if(r.ocorrencias){
-
-                if(descricao)
-                    descricao += " ";
-
-                descricao += r.ocorrencias;
-
-            }
-
-
-            if(descricao){
-
-                texto += descricao + "\n";
-
-            }
-
-
-            if(r.acao){
-
-                texto +=
-                    "AÇÃO: " +
-                    r.acao +
-                    "\n";
-
-            }
-
-
-            if(r.previsao){
-
-                texto +=
-                    "PREVISÃO DE RETORNO: " +
-                    r.previsao +
-                    "\n";
-
-            }
-
-
-            texto += "\n";
-
-        });
-
-
-    document.getElementById("relatorio")
-        .value = texto.trim();
+    document.getElementById(
+        "relatorio"
+    ).value =
+        texto.trim();
 
 }
 
 
 /* ==========================================================
-   EMOJI
-========================================================== */
-
-function emojiStatus(status){
-
-    const s =
-        normalizarStatus(status);
-
-
-    if(
-        s.includes("indisponivel")
-        ||
-        s.includes("manutencao")
-    )
-        return "🔴";
-
-
-    if(
-        s.includes("restricao")
-    )
-        return "🟡";
-
-
-    if(
-        s.includes("operando")
-        ||
-        s.includes("disponivel")
-    )
-        return "🟢";
-
-
-    return "⚪";
-
-}
-
-
-/* ==========================================================
-   COPIAR WHATSAPP
+   COPIAR
 ========================================================== */
 
 async function copiarWhatsApp(){
@@ -1477,25 +2859,41 @@ async function copiarWhatsApp(){
 
 
     const texto =
-        document.getElementById("relatorio").value;
+        document.getElementById(
+            "relatorio"
+        ).value;
 
 
     try{
 
-        await navigator.clipboard.writeText(texto);
+        await navigator
+            .clipboard
+            .writeText(
+                texto
+            );
+
 
         mensagem(
             "Relatório copiado para o WhatsApp."
         );
 
+
     }catch(e){
 
         const area =
-            document.getElementById("relatorio");
+            document.getElementById(
+                "relatorio"
+            );
+
+
+        area.focus();
 
         area.select();
 
-        document.execCommand("copy");
+        document.execCommand(
+            "copy"
+        );
+
 
         mensagem(
             "Relatório copiado."
@@ -1522,11 +2920,23 @@ function limparTudo(){
 
     registros = [];
 
+
     salvarDados();
 
     atualizarTela();
 
     gerarRelatorio();
+
+
+    atualizarStatus(
+        "Dados apagados."
+    );
+
+
+    atualizarStatusCaptura(
+        "Nenhum registro armazenado."
+    );
+
 
     mensagem(
         "Todos os dados foram apagados."
@@ -1551,33 +2961,52 @@ function exportarJSON(){
                 )
             ],
             {
-                type:"application/json"
+                type:
+                    "application/json"
             }
         );
 
 
     const url =
-        URL.createObjectURL(blob);
+        URL.createObjectURL(
+            blob
+        );
 
 
     const a =
-        document.createElement("a");
+        document.createElement(
+            "a"
+        );
 
 
-    a.href = url;
+    a.href =
+        url;
+
 
     a.download =
         "UTE_MAUES_PIE_" +
-        new Date()
-            .toISOString()
-            .slice(0,10) +
+        hojeISO() +
         ".json";
+
+
+    document.body.appendChild(
+        a
+    );
 
 
     a.click();
 
 
-    URL.revokeObjectURL(url);
+    a.remove();
+
+
+    setTimeout(
+        () =>
+            URL.revokeObjectURL(
+                url
+            ),
+        500
+    );
 
 
     mensagem(
@@ -1606,121 +3035,112 @@ function importarJSON(event){
 
 
     leitor.onload =
-        function(e){
+    function(e){
 
-            try{
+        try{
 
-                const dados =
-                    JSON.parse(
-                        e.target.result
-                    );
-
-
-                if(!Array.isArray(dados)){
-
-                    alert(
-                        "Arquivo inválido."
-                    );
-
-                    return;
-
-                }
-
-
-                registros = dados;
-
-
-                salvarDados();
-
-                atualizarTela();
-
-                gerarRelatorio();
-
-
-                mensagem(
-                    "Dados importados."
+            const dados =
+                JSON.parse(
+                    e.target.result
                 );
 
 
-            }catch(error){
+            if(
+                !Array.isArray(
+                    dados
+                )
+            ){
 
                 alert(
-                    "Não foi possível importar o arquivo."
+                    "Arquivo inválido."
                 );
+
+                return;
 
             }
 
-        };
+
+            registros =
+                dados;
 
 
-    leitor.readAsText(arquivo);
+            registros =
+                registros.filter(
+                    r =>
+                        r &&
+                        r.ugd
+                );
+
+
+            registros.forEach(
+                r => {
+
+                    r.ugd =
+                        String(
+                            r.ugd
+                        )
+                        .trim()
+                        .toUpperCase();
+
+                    r.hrm =
+                        limparHRM(
+                            r.hrm
+                        );
+
+                    if(
+                        !r.equipamento
+                    ){
+
+                        r.equipamento =
+                            equipamentos[
+                                r.ugd
+                            ] || "";
+
+                    }
+
+                }
+            );
+
+
+            registros.sort(
+                (a,b) =>
+                    numeroUGD(a.ugd) -
+                    numeroUGD(b.ugd)
+            );
+
+
+            salvarDados();
+
+            atualizarTela();
+
+            gerarRelatorio();
+
+
+            mensagem(
+                "Dados importados."
+            );
+
+
+        }catch(error){
+
+            alert(
+                "Não foi possível importar o arquivo."
+            );
+
+        }
+
+    };
+
+
+    leitor.readAsText(
+        arquivo
+    );
 
 }
 
 
 /* ==========================================================
-   EVENTO POSTMESSAGE
-========================================================== */
-
-window.addEventListener(
-    "message",
-    function(event){
-
-        if(!event.data)
-            return;
-
-
-        if(
-            event.data.tipo ===
-            "UTE_MAUES_PIE"
-        ){
-
-            if(
-                Array.isArray(
-                    event.data.dados
-                )
-            ){
-
-                window.receberListaPIE(
-                    event.data.dados
-                );
-
-            }else{
-
-                window.receberDadosPIE(
-                    event.data.dados
-                );
-
-            }
-
-        }
-
-    }
-);
-
-
-/* ==========================================================
-   EVENTO CUSTOMIZADO
-========================================================== */
-
-window.addEventListener(
-    "ute-pie-dados",
-    function(event){
-
-        if(event.detail){
-
-            window.receberDadosPIE(
-                event.detail
-            );
-
-        }
-
-    }
-);
-
-
-/* ==========================================================
-   EXPÕE DADOS PARA OUTROS SCRIPTS
+   API PÚBLICA DO SISTEMA
 ========================================================== */
 
 window.UTE_MAUES = {
@@ -1730,6 +3150,12 @@ window.UTE_MAUES = {
 
     receberLista:
         window.receberListaPIE,
+
+    gerarRelatorio:
+        gerarRelatorio,
+
+    copiarWhatsApp:
+        copiarWhatsApp,
 
     equipamentos:
         equipamentos,
@@ -1744,8 +3170,13 @@ window.UTE_MAUES = {
 };
 
 
+/* ==========================================================
+   FINAL
+========================================================== */
+
 </script>
 
+
 </body>
+
 </html>
-```
