@@ -1,1 +1,1905 @@
-<!DOCTYPE html> <html lang="pt-BR"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Leitor PIE - UTE Maués</title> <style> * { box-sizing: border-box; } body { margin: 0; font-family: Arial, sans-serif; background: #f1f5f9; color: #172033; } header { background: #172033; color: white; padding: 18px; } header h1 { margin: 0; font-size: 22px; } header p { margin: 6px 0 0; opacity: .8; font-size: 13px; } .container { max-width: 1200px; margin: auto; padding: 18px; } .card { background: white; border-radius: 12px; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,.08); } .buttons { display: flex; gap: 10px; flex-wrap: wrap; } button { border: 0; border-radius: 8px; padding: 12px 16px; cursor: pointer; font-weight: bold; } .btn-primary { background: #1769e0; color: white; } .btn-success { background: #16803c; color: white; } .btn-secondary { background: #64748b; color: white; } button:hover { opacity: .9; } .status { margin-top: 12px; padding: 10px; border-radius: 8px; background: #eef2f7; font-size: 14px; } textarea { width: 100%; min-height: 400px; resize: vertical; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px; font-family: Arial, sans-serif; line-height: 1.5; } table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; } th, td { border: 1px solid #e2e8f0; padding: 8px; text-align: left; } th { background: #e2e8f0; } .badge { display: inline-block; padding: 4px 7px; border-radius: 6px; font-size: 11px; font-weight: bold; } .disponivel { background: #dcfce7; color: #166534; } .operando { background: #dbeafe; color: #1e40af; } .restricao { background: #fef3c7; color: #92400e; } .manutencao { background: #fed7aa; color: #9a3412; } .indisponivel { background: #fee2e2; color: #991b1b; } .semstatus { background: #e2e8f0; color: #475569; } .empty { text-align: center; padding: 30px; color: #64748b; } .small { font-size: 12px; color: #64748b; } </style> </head> <body> <header> <h1>⚡ LEITOR PIE — UTE MAUÉS</h1> <p>Leitura automática dos dados disponíveis na página do PIE</p> </header> <div class="container"> <div class="card"> <h2>⚡ Controle</h2> <div class="buttons"> <button class="btn-primary" onclick="lerPIE()"> 🔄 LER PIE </button> <button class="btn-success" onclick="gerarRelatorio()"> 📊 GERAR RELATÓRIO </button> <button class="btn-secondary" onclick="copiarWhatsApp()"> 📋 COPIAR WHATSAPP </button> <button class="btn-secondary" onclick="limparTudo()"> 🗑️ LIMPAR </button> </div> <div id="status" class="status"> Aguardando leitura do PIE... </div> </div> <div class="card"> <h2>📋 Dados encontrados</h2> <div id="contador" class="small"> Nenhuma UGD encontrada. </div> <div style="overflow-x:auto;"> <table> <thead> <tr> <th>UGD</th> <th>Equipamento</th> <th>Status</th> <th>HRM</th> <th>OS</th> <th>Descrição</th> </tr> </thead> <tbody id="tabela"> <tr> <td colspan="6" class="empty"> Clique em "LER PIE". </td> </tr> </tbody> </table> </div> </div> <div class="card"> <h2>📱 Relatório WhatsApp</h2> <textarea id="relatorio" placeholder="O relatório aparecerá aqui..."></textarea> </div> </div> <script> let dados = []; /* ========================================================== STATUS ========================================================== */ function atualizarStatus(texto) { document.getElementById("status").textContent = texto; } /* ========================================================== NORMALIZAÇÃO ========================================================== */ function normalizar(texto) { return String(texto || "") .replace(/\u00a0/g, " ") .replace(/\s+/g, " ") .trim(); } /* ========================================================== LIMPA HRM Exemplos: 22.438 + 12 22.438 (+12) 22438 + 12 ========================================================== */ function limparHRM(valor) { if (!valor) return ""; let texto = String(valor); texto = texto .replace(/\([^)]*\)/g, "") .replace(/\+\s*[\d.,]+/g, "") .replace(/\s+/g, " ") .trim(); /* Mantém somente o primeiro número encontrado. */ const encontrado = texto.match(/\d[\d.,]*/); if (!encontrado) return ""; return encontrado[0]; } /* ========================================================== NORMALIZA STATUS ========================================================== */ function normalizarStatus(status) { let s = normalizar(status).toUpperCase(); if ( s.includes("INDISPON") || s === "DI" ) { return "INDISPONÍVEL"; } if ( s.includes("RESTRI") ) { return "OPERANDO COM RESTRIÇÃO"; } if ( s.includes("MANUTEN") ) { return "MANUTENÇÃO"; } if ( s.includes("DISPON") || s === "D" ) { return "DISPONÍVEL"; } if ( s.includes("OPERANDO") || s === "OP" ) { return "OPERANDO"; } if ( s === "OR" ) { return "OPERANDO COM RESTRIÇÃO"; } return s || "NÃO INFORMADO"; } /* ========================================================== CLASSE DO STATUS ========================================================== */ function classeStatus(status) { const s = status.toUpperCase(); if (s.includes("INDISPON")) return "indisponivel"; if (s.includes("MANUTEN")) return "manutencao"; if (s.includes("RESTRI")) return "restricao"; if (s.includes("OPERANDO")) return "operando"; if (s.includes("DISPON")) return "disponivel"; return "semstatus"; } /* ========================================================== DETECTA UGD ========================================================== */ function detectarUGD(texto) { const t = normalizar(texto).toUpperCase(); let m = t.match(/\bUGD[\s\-]*0*(\d{1,2})\b/); if (m) { const numero = parseInt(m[1], 10); if (numero >= 1 && numero <= 60) { return "UGD-" + String(numero).padStart(2, "0"); } } return ""; } /* ========================================================== DETECTA EQUIPAMENTO ========================================================== */ function detectarEquipamento(texto) { const t = normalizar(texto).toUpperCase(); const padroes = [ /UTE\d{3}-[\w\-]+/i, /DIY-[A-Z0-9]+\s*\d+/i ]; for (const regex of padroes) { const m = t.match(regex); if (m) { return m[0]; } } return ""; } /* ========================================================== DETECTA HRM ========================================================== */ function detectarHRM(texto) { const t = normalizar(texto); /* Procura números próximos de palavras relacionadas ao horímetro. */ const padroes = [ /HRM[\s:\-]*([0-9.,]+\s*(?:\+\s*[0-9.,]+)?)/i, /HOR[IÍ]METRO[\s:\-]*([0-9.,]+\s*(?:\+\s*[0-9.,]+)?)/i, /H[\s:\-]*([0-9]{3,}[.,]?[0-9]*)/i ]; for (const regex of padroes) { const m = t.match(regex); if (m) { return limparHRM(m[1]); } } return ""; } /* ========================================================== DETECTA OS ========================================================== */ function detectarOS(texto) { const t = normalizar(texto); const m = t.match(/\bOS[\s:\-]*(\d{5,8})\b/i); return m ? m[1] : ""; } /* ========================================================== DESCRIÇÃO ========================================================== */ function detectarDescricao(texto) { const t = normalizar(texto); const m = t.match( /(?:OS[\s:\-]*\d{5,8})\s*[-–—:]?\s*(.+)$/i ); if (m) { return normalizar(m[1]); } return ""; } /* ========================================================== TENTA LER LINHAS DA PÁGINA ========================================================== */ function lerElementosDaPagina() { const encontrados = []; const elementos = document.querySelectorAll( "tr, [role='row'], .ui-grid-row, .slick-row, div" ); for (const elemento of elementos) { const texto = normalizar(elemento.innerText); if (!texto) continue; const ugd = detectarUGD(texto); if (!ugd) continue; encontrados.push({ texto, elemento }); } return encontrados; } /* ========================================================== PROCESSA LINHAS ========================================================== */ function processarDados() { const linhas = lerElementosDaPagina(); const mapa = {}; for (const item of linhas) { const texto = item.texto; const ugd = detectarUGD(texto); if (!ugd) continue; const equipamento = detectarEquipamento(texto); const hrm = detectarHRM(texto); const os = detectarOS(texto); let status = ""; const upper = texto.toUpperCase(); if (upper.includes("INDISPONÍVEL") || upper.includes("INDISPONIVEL")) { status = "INDISPONÍVEL"; } else if ( upper.includes("MANUTENÇÃO") || upper.includes("MANUTENCAO") ) { status = "MANUTENÇÃO"; } else if ( upper.includes("RESTRIÇÃO") || upper.includes("RESTRICAO") ) { status = "OPERANDO COM RESTRIÇÃO"; } else if ( upper.includes("OPERANDO") ) { status = "OPERANDO"; } else if ( upper.includes("DISPONÍVEL") || upper.includes("DISPONIVEL") ) { status = "DISPONÍVEL"; } const descricao = detectarDescricao(texto); /* Se já encontramos essa UGD, vamos juntar somente informações que ainda não existam. */ if (!mapa[ugd]) { mapa[ugd] = { ugd, equipamento, status, hrm, os, descricao }; } else { const atual = mapa[ugd]; if (!atual.equipamento && equipamento) atual.equipamento = equipamento; if (!atual.hrm && hrm) atual.hrm = hrm; if (!atual.os && os) atual.os = os; if (!atual.descricao && descricao) atual.descricao = descricao; if ( (!atual.status || atual.status === "NÃO INFORMADO") && status ) { atual.status = status; } } } dados = Object.values(mapa); dados.sort((a, b) => { const na = parseInt(a.ugd.replace(/\D/g, ""), 10); const nb = parseInt(b.ugd.replace(/\D/g, ""), 10); return na - nb; }); } /* ========================================================== MOSTRA TABELA ========================================================== */ function mostrarTabela() { const tbody = document.getElementById("tabela"); const contador = document.getElementById("contador"); tbody.innerHTML = ""; if (!dados.length) { tbody.innerHTML = ` <tr> <td colspan="6" class="empty"> Nenhuma UGD encontrada na página. </td> </tr> `; contador.textContent = "Nenhuma UGD encontrada."; return; } contador.textContent = `${dados.length} UGD(s) encontrada(s).`; for (const item of dados) { const tr = document.createElement("tr"); const classe = classeStatus(item.status); tr.innerHTML = ` <td><strong>${escapeHTML(item.ugd)}</strong></td> <td> ${escapeHTML(item.equipamento || "-")} </td> <td> <span class="badge ${classe}"> ${escapeHTML( item.status || "NÃO INFORMADO" )} </span> </td> <td> ${escapeHTML(item.hrm || "-")} </td> <td> ${item.os ? "OS " + escapeHTML(item.os) : "-" } </td> <td> ${escapeHTML(item.descricao || "-")} </td> `; tbody.appendChild(tr); } } /* ========================================================== ESCAPE HTML ========================================================== */ function escapeHTML(valor) { return String(valor || "") .replace(/&/g, "&amp;") .replace(/</g, "&lt;") .replace(/>/g, "&gt;") .replace(/"/g, "&quot;") .replace(/'/g, "&#039;"); } /* ========================================================== LER PIE ========================================================== */ function lerPIE() { atualizarStatus( "🔄 Lendo os dados disponíveis na página..." ); try { processarDados(); mostrarTabela(); if (dados.length) { atualizarStatus( `✅ Leitura concluída. ${dados.length} UGD(s) identificada(s).` ); } else { atualizarStatus( "⚠️ Nenhuma UGD foi encontrada na página atual." ); } } catch (erro) { console.error(erro); atualizarStatus( "❌ Erro ao ler a página." ); } } /* ========================================================== RELATÓRIO WHATSAPP ========================================================== */ function gerarRelatorio() { if (!dados.length) { lerPIE(); if (!dados.length) { alert( "Nenhuma UGD foi encontrada." ); return; } } const hoje = new Date().toLocaleDateString( "pt-BR" ); let texto = ""; texto += "*UTE MAUÉS*\n\n"; texto += `*DATA*: _${hoje}_\n\n`; texto += "*STATUS DE DISPONIBILIDADE, HORÍMETRO E HORAS DE OPERAÇÃO DAS UGDs*\n\n"; for (const item of dados) { let emoji = "⚪"; const status = (item.status || "").toUpperCase(); if (status.includes("DISPONÍVEL")) emoji = "🟢"; else if (status.includes("OPERANDO")) emoji = "🔵"; else if (status.includes("RESTRIÇÃO")) emoji = "🟡"; else if (status.includes("MANUTENÇÃO")) emoji = "🟠"; else if (status.includes("INDISPONÍVEL")) emoji = "🔴"; texto += `${emoji} *${item.ugd}*`; if (item.equipamento) { texto += ` ${item.equipamento}`; } texto += "\n"; texto += `${item.status || "NÃO INFORMADO"}\n`; if (item.hrm) { texto += `HRM: ${item.hrm}\n`; } if (item.os) { texto += `OS ${item.os}`; if (item.descricao) { texto += ` – ${item.descricao}`; } texto += "\n"; } texto += "\n"; } document.getElementById( "relatorio" ).value = texto.trim(); atualizarStatus( "✅ Relatório gerado." ); } /* ========================================================== COPIAR WHATSAPP ========================================================== */ async function copiarWhatsApp() { const campo = document.getElementById("relatorio"); if (!campo.value.trim()) { gerarRelatorio(); } try { await navigator.clipboard.writeText( campo.value ); atualizarStatus( "✅ Relatório copiado. Agora é só colar no WhatsApp." ); } catch (erro) { campo.select(); document.execCommand("copy"); atualizarStatus( "✅ Relatório copiado." ); } } /* ========================================================== LIMPAR ========================================================== */ function limparTudo() { dados = []; document.getElementById( "tabela" ).innerHTML = ` <tr> <td colspan="6" class="empty"> Clique em "LER PIE". </td> </tr> `; document.getElementById( "contador" ).textContent = "Nenhuma UGD encontrada."; document.getElementById( "relatorio" ).value = ""; atualizarStatus( "Aguardando leitura do PIE..." ); } </script> </body> </html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Capturador PIE - UTE Maués</title>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#eef2f7;
+    color:#172033;
+}
+
+header{
+    background:#172033;
+    color:white;
+    padding:15px 18px;
+}
+
+header h1{
+    margin:0 0 5px;
+    font-size:20px;
+}
+
+header p{
+    margin:0;
+    font-size:12px;
+    opacity:.8;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:15px;
+}
+
+.card{
+    background:white;
+    border-radius:12px;
+    padding:15px;
+    margin-bottom:15px;
+    box-shadow:0 2px 9px rgba(0,0,0,.08);
+}
+
+.botoes{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+button{
+    border:0;
+    border-radius:8px;
+    padding:11px 15px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.azul{
+    background:#1769e0;
+    color:white;
+}
+
+.verde{
+    background:#16803c;
+    color:white;
+}
+
+.cinza{
+    background:#64748b;
+    color:white;
+}
+
+.vermelho{
+    background:#b91c1c;
+    color:white;
+}
+
+#status{
+    margin-top:12px;
+    padding:10px;
+    border-radius:8px;
+    background:#f1f5f9;
+    font-size:13px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+}
+
+.box{
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:8px;
+    padding:10px;
+}
+
+.label{
+    font-size:10px;
+    font-weight:bold;
+    color:#64748b;
+}
+
+.valor{
+    margin-top:4px;
+    font-size:14px;
+    word-break:break-word;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:12px;
+}
+
+th,
+td{
+    border:1px solid #e2e8f0;
+    padding:7px;
+    vertical-align:top;
+    text-align:left;
+}
+
+th{
+    background:#e2e8f0;
+}
+
+.table{
+    overflow:auto;
+}
+
+textarea{
+    width:100%;
+    min-height:400px;
+    resize:vertical;
+    border:1px solid #cbd5e1;
+    border-radius:8px;
+    padding:12px;
+    font-family:Arial;
+    line-height:1.5;
+}
+
+.contador{
+    font-weight:bold;
+    margin-bottom:10px;
+}
+
+@media(max-width:800px){
+
+    .grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+}
+
+@media(max-width:500px){
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+
+<h1>⚡ CAPTURADOR PIE — UTE MAUÉS</h1>
+
+<p>
+Captura automática dos registros enquanto você avança pela seta do PIE
+</p>
+
+</header>
+
+
+<div class="container">
+
+
+<!-- CONTROLE -->
+
+<div class="card">
+
+<div class="botoes">
+
+<button
+class="azul"
+onclick="ativarCaptura()">
+▶ ATIVAR CAPTURA
+</button>
+
+<button
+class="verde"
+onclick="capturarAgora()">
+📥 CAPTURAR AGORA
+</button>
+
+<button
+class="azul"
+onclick="gerarRelatorio()">
+📊 GERAR RELATÓRIO
+</button>
+
+<button
+class="verde"
+onclick="copiarWhatsApp()">
+📋 COPIAR WHATSAPP
+</button>
+
+<button
+class="vermelho"
+onclick="limparDados()">
+🗑 LIMPAR
+</button>
+
+</div>
+
+<div id="status">
+Aguardando ativação da captura...
+</div>
+
+</div>
+
+
+
+<!-- REGISTRO ATUAL -->
+
+<div class="card">
+
+<h3>📡 Registro atual</h3>
+
+<div class="grid">
+
+<div class="box">
+<div class="label">UGD</div>
+<div class="valor" id="ugdAtual">-</div>
+</div>
+
+<div class="box">
+<div class="label">GRUPO GERADOR</div>
+<div class="valor" id="grupoAtual">-</div>
+</div>
+
+<div class="box">
+<div class="label">IDENTIFICAÇÃO GG</div>
+<div class="valor" id="identificacaoAtual">-</div>
+</div>
+
+<div class="box">
+<div class="label">HORÍMETRO</div>
+<div class="valor" id="hrmAtual">-</div>
+</div>
+
+<div class="box">
+<div class="label">STATUS OPERAÇÃO</div>
+<div class="valor" id="statusAtual">-</div>
+</div>
+
+<div class="box">
+<div class="label">NÚMERO OS</div>
+<div class="valor" id="osAtual">-</div>
+</div>
+
+<div class="box">
+<div class="label">CAUSA</div>
+<div class="valor" id="causaAtual">-</div>
+</div>
+
+<div class="box">
+<div class="label">OCORRÊNCIAS</div>
+<div class="valor" id="ocorrenciasAtual">-</div>
+</div>
+
+<div class="box">
+<div class="label">AÇÃO</div>
+<div class="valor" id="acaoAtual">-</div>
+</div>
+
+<div class="box">
+<div class="label">PREVISÃO DE RETORNO</div>
+<div class="valor" id="previsaoAtual">-</div>
+</div>
+
+<div class="box">
+<div class="label">STATUS AÇÃO</div>
+<div class="valor" id="statusAcaoAtual">-</div>
+</div>
+
+<div class="box">
+<div class="label">HORAS</div>
+<div class="valor" id="horasAtual">-</div>
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- CAPTURADOS -->
+
+<div class="card">
+
+<h3>📋 UGDs capturadas</h3>
+
+<div
+class="contador"
+id="contador">
+0 / 60 UGDs
+</div>
+
+<div class="table">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>UGD</th>
+
+<th>Grupo Gerador</th>
+
+<th>Equipamento</th>
+
+<th>Status</th>
+
+<th>HRM</th>
+
+<th>OS</th>
+
+<th>Causa</th>
+
+<th>Ocorrências</th>
+
+<th>Ação</th>
+
+<th>Horas</th>
+
+</tr>
+
+</thead>
+
+<tbody id="tabela">
+
+<tr>
+
+<td colspan="10">
+Nenhuma UGD capturada.
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+
+
+<!-- RELATÓRIO -->
+
+<div class="card">
+
+<h3>📱 Relatório para WhatsApp</h3>
+
+<textarea
+id="relatorio"
+placeholder="O relatório será gerado aqui...">
+</textarea>
+
+</div>
+
+
+</div>
+
+
+
+<script>
+
+/* ==========================================================
+   VARIÁVEIS
+========================================================== */
+
+let capturas = [];
+
+let capturaAtiva = false;
+
+let intervalo = null;
+
+let ultimaAssinatura = "";
+
+
+
+/* ==========================================================
+   FUNÇÕES BÁSICAS
+========================================================== */
+
+function normalizar(texto){
+
+    return String(texto || "")
+        .replace(/\u00a0/g," ")
+        .replace(/\s+/g," ")
+        .trim();
+
+}
+
+
+function pegar(id){
+
+    return document.getElementById(id);
+
+}
+
+
+
+/* ==========================================================
+   TEXTO DA PÁGINA
+========================================================== */
+
+function textoPagina(){
+
+    return normalizar(
+        document.body.innerText || ""
+    );
+
+}
+
+
+
+/* ==========================================================
+   PEGAR CAMPO PELO NOME
+========================================================== */
+
+function pegarCampo(nome){
+
+    const elementos =
+        document.querySelectorAll(
+            "input, textarea, select, [contenteditable='true']"
+        );
+
+
+    for(const elemento of elementos){
+
+        const aria =
+            normalizar(
+                elemento.getAttribute("aria-label")
+            );
+
+        const titulo =
+            normalizar(
+                elemento.getAttribute("title")
+            );
+
+        const placeholder =
+            normalizar(
+                elemento.getAttribute("placeholder")
+            );
+
+
+        const nomes = [
+            aria,
+            titulo,
+            placeholder
+        ];
+
+
+        for(const valor of nomes){
+
+            if(
+                valor &&
+                valor
+                .toUpperCase()
+                .includes(nome.toUpperCase())
+            ){
+
+                return normalizar(
+                    elemento.value ||
+                    elemento.innerText
+                );
+
+            }
+
+        }
+
+    }
+
+
+
+    /*
+       Procura diretamente no texto da página.
+    */
+
+    const texto =
+        document.body.innerText || "";
+
+
+    const linhas =
+        texto.split("\n");
+
+
+    for(let i=0;i<linhas.length;i++){
+
+        const linha =
+            normalizar(linhas[i]);
+
+
+        if(
+            linha
+            .toUpperCase()
+            .includes(nome.toUpperCase())
+        ){
+
+            /*
+               Caso o valor esteja na mesma linha.
+            */
+
+            const partes =
+                linha.split(":");
+
+
+            if(partes.length > 1){
+
+                const valor =
+                    normalizar(
+                        partes.slice(1).join(":")
+                    );
+
+
+                if(valor){
+
+                    return valor;
+
+                }
+
+            }
+
+
+            /*
+               Caso o valor esteja na linha seguinte.
+            */
+
+            if(
+                linhas[i+1]
+            ){
+
+                const proxima =
+                    normalizar(
+                        linhas[i+1]
+                    );
+
+
+                if(
+                    proxima &&
+                    !proxima
+                    .toUpperCase()
+                    .includes(nome.toUpperCase())
+                ){
+
+                    return proxima;
+
+                }
+
+            }
+
+        }
+
+    }
+
+
+    return "";
+
+}
+
+
+
+/* ==========================================================
+   HRM
+========================================================== */
+
+function limparHRM(valor){
+
+    if(!valor){
+
+        return "";
+
+    }
+
+
+    let texto =
+        normalizar(valor);
+
+
+    /*
+       Remove acréscimos.
+       
+       Exemplo:
+       22.438 + 12
+       
+       vira:
+       22.438
+    */
+
+    texto =
+        texto.replace(
+            /\+\s*[\d.,]+/g,
+            ""
+        );
+
+
+    /*
+       Remove conteúdo entre parênteses.
+    */
+
+    texto =
+        texto.replace(
+            /\([^)]*\)/g,
+            ""
+        );
+
+
+    const numero =
+        texto.match(
+            /\d[\d.,]*/
+        );
+
+
+    return numero
+        ? numero[0]
+        : "";
+
+}
+
+
+
+/* ==========================================================
+   IDENTIFICAR UGD
+========================================================== */
+
+function identificarUGD(){
+
+    const texto =
+        textoPagina()
+        .toUpperCase();
+
+
+    /*
+       Primeiro tenta UGD-01
+    */
+
+    let match =
+        texto.match(
+            /\bUGD[\s-]*0*(\d{1,2})\b/
+        );
+
+
+    if(match){
+
+        const numero =
+            parseInt(
+                match[1]
+            );
+
+
+        if(
+            numero >= 1 &&
+            numero <= 60
+        ){
+
+            return (
+                "UGD-" +
+                String(numero)
+                .padStart(2,"0")
+            );
+
+        }
+
+    }
+
+
+
+    /*
+       Tenta MUUGD-01
+    */
+
+    match =
+        texto.match(
+            /\bMUUGD[\s-]*0*(\d{1,2})\b/
+        );
+
+
+    if(match){
+
+        const numero =
+            parseInt(
+                match[1]
+            );
+
+
+        if(
+            numero >= 1 &&
+            numero <= 60
+        ){
+
+            return (
+                "UGD-" +
+                String(numero)
+                .padStart(2,"0")
+            );
+
+        }
+
+    }
+
+
+
+    /*
+       Tenta pelo grupo gerador.
+    */
+
+    const grupo =
+        pegarCampo(
+            "GRUPO GERADOR"
+        );
+
+
+    match =
+        grupo.match(
+            /MUUGD[\s-]*0*(\d{1,2})/i
+        );
+
+
+    if(match){
+
+        return (
+            "UGD-" +
+            String(
+                parseInt(match[1])
+            ).padStart(2,"0")
+        );
+
+    }
+
+
+    return "";
+
+}
+
+
+
+/* ==========================================================
+   EQUIPAMENTO
+========================================================== */
+
+function identificarEquipamento(){
+
+    const texto =
+        textoPagina();
+
+
+    const encontrados =
+        texto.match(
+            /UTE\d{3}-[\w-]+/gi
+        );
+
+
+    if(
+        encontrados &&
+        encontrados.length
+    ){
+
+        return encontrados[0];
+
+    }
+
+
+    const grupo =
+        pegarCampo(
+            "GRUPO GERADOR"
+        );
+
+
+    if(grupo){
+
+        return grupo;
+
+    }
+
+
+    return "";
+
+}
+
+
+
+/* ==========================================================
+   CAPTURAR REGISTRO
+========================================================== */
+
+function lerRegistro(){
+
+    const texto =
+        textoPagina();
+
+
+    const ugd =
+        identificarUGD();
+
+
+    const grupo =
+        pegarCampo(
+            "GRUPO GERADOR"
+        );
+
+
+    const identificacao =
+        pegarCampo(
+            "IDENTIFICAÇÃO GG"
+        ) ||
+        pegarCampo(
+            "IDENTIFICACAO GG"
+        );
+
+
+    const hrm =
+        limparHRM(
+            pegarCampo(
+                "HORÍMETRO"
+            ) ||
+            pegarCampo(
+                "HORIMETRO"
+            )
+        );
+
+
+    const status =
+        pegarCampo(
+            "STATUS OPERAÇÃO"
+        ) ||
+        pegarCampo(
+            "STATUS OPERACAO"
+        );
+
+
+    const osTexto =
+        pegarCampo(
+            "NUM. OS"
+        ) ||
+        pegarCampo(
+            "NUM OS"
+        );
+
+
+    const osMatch =
+        osTexto.match(
+            /\d{5,8}/
+        );
+
+
+    const os =
+        osMatch
+        ? osMatch[0]
+        : "";
+
+
+    const causa =
+        pegarCampo(
+            "CAUSA"
+        );
+
+
+    const ocorrencias =
+        pegarCampo(
+            "OCORRÊNCIAS"
+        ) ||
+        pegarCampo(
+            "OCORRENCIAS"
+        );
+
+
+    const acao =
+        pegarCampo(
+            "AÇÃO"
+        ) ||
+        pegarCampo(
+            "ACAO"
+        );
+
+
+    const previsao =
+        pegarCampo(
+            "PREVISÃO DE RETORNO"
+        ) ||
+        pegarCampo(
+            "PREVISAO DE RETORNO"
+        );
+
+
+    const statusAcao =
+        pegarCampo(
+            "STATUS AÇÃO"
+        ) ||
+        pegarCampo(
+            "STATUS ACAO"
+        );
+
+
+    const horas =
+        pegarCampo(
+            "HORAS"
+        );
+
+
+
+    /*
+       Se não encontrou absolutamente
+       nada, não salva.
+    */
+
+    if(
+        !ugd &&
+        !grupo &&
+        !identificacao &&
+        !hrm &&
+        !os
+    ){
+
+        return null;
+
+    }
+
+
+    return {
+
+        ugd:
+            ugd || "NÃO IDENTIFICADA",
+
+        grupo,
+
+        equipamento:
+            identificarEquipamento(),
+
+        identificacao,
+
+        hrm,
+
+        status,
+
+        os,
+
+        causa,
+
+        ocorrencias,
+
+        acao,
+
+        previsao,
+
+        statusAcao,
+
+        horas,
+
+        data:
+            new Date()
+            .toLocaleString(
+                "pt-BR"
+            )
+
+    };
+
+}
+
+
+
+/* ==========================================================
+   ASSINATURA
+========================================================== */
+
+function assinatura(d){
+
+    return [
+
+        d.ugd,
+        d.grupo,
+        d.equipamento,
+        d.hrm,
+        d.status,
+        d.os,
+        d.causa,
+        d.ocorrencias,
+        d.acao,
+        d.previsao,
+        d.statusAcao,
+        d.horas
+
+    ].join("|");
+
+}
+
+
+
+/* ==========================================================
+   MOSTRAR REGISTRO ATUAL
+========================================================== */
+
+function mostrarAtual(d){
+
+    pegar("ugdAtual")
+        .textContent =
+        d.ugd || "-";
+
+
+    pegar("grupoAtual")
+        .textContent =
+        d.grupo || "-";
+
+
+    pegar("identificacaoAtual")
+        .textContent =
+        d.identificacao || "-";
+
+
+    pegar("hrmAtual")
+        .textContent =
+        d.hrm || "-";
+
+
+    pegar("statusAtual")
+        .textContent =
+        d.status || "-";
+
+
+    pegar("osAtual")
+        .textContent =
+        d.os
+        ? "OS " + d.os
+        : "-";
+
+
+    pegar("causaAtual")
+        .textContent =
+        d.causa || "-";
+
+
+    pegar("ocorrenciasAtual")
+        .textContent =
+        d.ocorrencias || "-";
+
+
+    pegar("acaoAtual")
+        .textContent =
+        d.acao || "-";
+
+
+    pegar("previsaoAtual")
+        .textContent =
+        d.previsao || "-";
+
+
+    pegar("statusAcaoAtual")
+        .textContent =
+        d.statusAcao || "-";
+
+
+    pegar("horasAtual")
+        .textContent =
+        d.horas || "-";
+
+}
+
+
+
+/* ==========================================================
+   CAPTURAR AUTOMATICAMENTE
+========================================================== */
+
+function verificarTela(){
+
+    if(!capturaAtiva){
+
+        return;
+
+    }
+
+
+    const registro =
+        lerRegistro();
+
+
+    if(!registro){
+
+        return;
+
+    }
+
+
+    mostrarAtual(
+        registro
+    );
+
+
+    const novaAssinatura =
+        assinatura(
+            registro
+        );
+
+
+    /*
+       Se a tela ainda é a mesma,
+       não duplica.
+    */
+
+    if(
+        novaAssinatura ===
+        ultimaAssinatura
+    ){
+
+        return;
+
+    }
+
+
+    ultimaAssinatura =
+        novaAssinatura;
+
+
+
+    /*
+       Verifica se essa UGD
+       já foi capturada.
+    */
+
+    const indice =
+        capturas.findIndex(
+            item =>
+                item.ugd ===
+                registro.ugd
+        );
+
+
+    if(indice >= 0){
+
+        /*
+           Atualiza a UGD.
+        */
+
+        capturas[indice] =
+            registro;
+
+    }else{
+
+        /*
+           Nova UGD.
+        */
+
+        capturas.push(
+            registro
+        );
+
+    }
+
+
+    ordenarDados();
+
+    atualizarTabela();
+
+
+    pegar("status")
+        .innerHTML =
+        "✅ Capturado automaticamente: <b>" +
+        registro.ugd +
+        "</b> | HRM: " +
+        (registro.hrm || "-") +
+        " | " +
+        (registro.status || "Sem status") +
+        (registro.os
+            ? " | OS " + registro.os
+            : ""
+        );
+
+}
+
+
+
+/* ==========================================================
+   ORDENAR
+========================================================== */
+
+function ordenarDados(){
+
+    capturas.sort(
+        (a,b)=>{
+
+            const numeroA =
+                parseInt(
+                    (a.ugd.match(/\d+/)||["999"])[0]
+                );
+
+
+            const numeroB =
+                parseInt(
+                    (b.ugd.match(/\d+/)||["999"])[0]
+                );
+
+
+            return numeroA -
+                   numeroB;
+
+        }
+    );
+
+}
+
+
+
+/* ==========================================================
+   TABELA
+========================================================== */
+
+function atualizarTabela(){
+
+    const tabela =
+        pegar("tabela");
+
+
+    if(
+        !capturas.length
+    ){
+
+        tabela.innerHTML =
+            `
+            <tr>
+                <td colspan="10">
+                    Nenhuma UGD capturada.
+                </td>
+            </tr>
+            `;
+
+    }else{
+
+        tabela.innerHTML =
+            capturas.map(
+                d => `
+
+                <tr>
+
+                    <td>
+                        <b>
+                            ${esc(d.ugd)}
+                        </b>
+                    </td>
+
+                    <td>
+                        ${esc(
+                            d.grupo || "-"
+                        )}
+                    </td>
+
+                    <td>
+                        ${esc(
+                            d.equipamento || "-"
+                        )}
+                    </td>
+
+                    <td>
+                        ${esc(
+                            d.status || "-"
+                        )}
+                    </td>
+
+                    <td>
+                        ${esc(
+                            d.hrm || "-"
+                        )}
+                    </td>
+
+                    <td>
+                        ${
+                            d.os
+                            ? "OS " + esc(d.os)
+                            : "-"
+                        }
+                    </td>
+
+                    <td>
+                        ${esc(
+                            d.causa ||
+                            "-"
+                        )}
+                    </td>
+
+                    <td>
+                        ${esc(
+                            d.ocorrencias ||
+                            "-"
+                        )}
+                    </td>
+
+                    <td>
+                        ${esc(
+                            d.acao ||
+                            "-"
+                        )}
+                    </td>
+
+                    <td>
+                        ${esc(
+                            d.horas ||
+                            "-"
+                        )}
+                    </td>
+
+                </tr>
+
+                `
+            ).join("");
+
+    }
+
+
+    pegar("contador")
+        .textContent =
+        capturas.length +
+        " / 60 UGDs";
+
+}
+
+
+
+/* ==========================================================
+   ESCAPAR HTML
+========================================================== */
+
+function esc(valor){
+
+    return String(
+        valor || ""
+    )
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+    .replace(
+        /</g,
+        "&lt;"
+    )
+    .replace(
+        />/g,
+        "&gt;"
+    )
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+    .replace(
+        /'/g,
+        "&#039;"
+    );
+
+}
+
+
+
+/* ==========================================================
+   ATIVAR
+========================================================== */
+
+function ativarCaptura(){
+
+    if(
+        capturaAtiva
+    ){
+
+        capturaAtiva =
+            false;
+
+
+        clearInterval(
+            intervalo
+        );
+
+
+        document.querySelector(
+            ".azul"
+        ).textContent =
+            "▶ ATIVAR CAPTURA";
+
+
+        pegar("status")
+            .textContent =
+            "⏸ Captura pausada.";
+
+        return;
+
+    }
+
+
+    capturaAtiva =
+        true;
+
+
+    document.querySelector(
+        ".azul"
+    ).textContent =
+        "⏸ PAUSAR CAPTURA";
+
+
+    pegar("status")
+        .textContent =
+        "🟢 Captura ativa. Agora clique na seta do PIE para passar pelas UGDs.";
+
+
+    /*
+       Verifica a tela
+       a cada 700 ms.
+    */
+
+    intervalo =
+        setInterval(
+            verificarTela,
+            700
+        );
+
+
+    /*
+       Captura imediatamente
+       o registro que já está aberto.
+    */
+
+    verificarTela();
+
+}
+
+
+
+/* ==========================================================
+   CAPTURA MANUAL
+========================================================== */
+
+function capturarAgora(){
+
+    const registro =
+        lerRegistro();
+
+
+    if(!registro){
+
+        pegar("status")
+            .textContent =
+            "⚠️ Não consegui identificar os dados nesta tela.";
+
+        return;
+
+    }
+
+
+    ultimaAssinatura =
+        "";
+
+
+    verificarTela();
+
+}
+
+
+
+/* ==========================================================
+   GERAR RELATÓRIO
+========================================================== */
+
+function gerarRelatorio(){
+
+    if(
+        !capturas.length
+    ){
+
+        capturarAgora();
+
+    }
+
+
+    if(
+        !capturas.length
+    ){
+
+        alert(
+            "Nenhuma UGD capturada."
+        );
+
+        return;
+
+    }
+
+
+    const data =
+        new Date()
+        .toLocaleDateString(
+            "pt-BR"
+        );
+
+
+    let texto = "";
+
+
+    texto +=
+        "*UTE MAUÉS*\n\n";
+
+
+    texto +=
+        "*DATA*: _" +
+        data +
+        "_\n\n";
+
+
+    texto +=
+        "*STATUS DE DISPONIBILIDADE, HORÍMETRO E HORAS DE OPERAÇÃO DAS UGDs*\n\n";
+
+
+
+    for(
+        const d of capturas
+    ){
+
+        let emoji =
+            "⚪";
+
+
+        const status =
+            (
+                d.status ||
+                ""
+            ).toUpperCase();
+
+
+
+        if(
+            status.includes(
+                "INDISPON"
+            )
+        ){
+
+            emoji =
+                "🔴";
+
+        }
+        else if(
+            status.includes(
+                "MANUTEN"
+            )
+        ){
+
+            emoji =
+                "🟠";
+
+        }
+        else if(
+            status.includes(
+                "RESTRI"
+            )
+        ){
+
+            emoji =
+                "🟡";
+
+        }
+        else if(
+            status.includes(
+                "OPERANDO"
+            )
+        ){
+
+            emoji =
+                "🔵";
+
+        }
+        else if(
+            status.includes(
+                "DISPON"
+            )
+        ){
+
+            emoji =
+                "🟢";
+
+        }
+
+
+
+        texto +=
+            emoji +
+            " *" +
+            d.ugd +
+            "*";
+
+
+        if(
+            d.equipamento
+        ){
+
+            texto +=
+                " " +
+                d.equipamento;
+
+        }
+
+
+        texto +=
+            "\n";
+
+
+        if(
+            d.status
+        ){
+
+            texto +=
+                d.status +
+                "\n";
+
+        }
+
+
+        if(
+            d.hrm
+        ){
+
+            texto +=
+                "HRM: " +
+                d.hrm +
+                "\n";
+
+        }
+
+
+        if(
+            d.horas
+        ){
+
+            texto +=
+                "Horas: " +
+                d.horas +
+                "\n";
+
+        }
+
+
+        if(
+            d.os
+        ){
+
+            texto +=
+                "OS " +
+                d.os +
+                "\n";
+
+        }
+
+
+        if(
+            d.causa
+        ){
+
+            texto +=
+                "Causa: " +
+                d.causa +
+                "\n";
+
+        }
+
+
+        if(
+            d.ocorrencias
+        ){
+
+            texto +=
+                "Ocorrências: " +
+                d.ocorrencias +
+                "\n";
+
+        }
+
+
+        if(
+            d.acao
+        ){
+
+            texto +=
+                "Ação: " +
+                d.acao +
+                "\n";
+
+        }
+
+
+        if(
+            d.previsao
+        ){
+
+            texto +=
+                "Previsão de retorno: " +
+                d.previsao +
+                "\n";
+
+        }
+
+
+        if(
+            d.statusAcao
+        ){
+
+            texto +=
+                "Status Ação: " +
+                d.statusAcao +
+                "\n";
+
+        }
+
+
+        texto +=
+            "\n";
+
+    }
+
+
+
+    pegar(
+        "relatorio"
+    ).value =
+        texto.trim();
+
+
+    pegar(
+        "status"
+    ).textContent =
+        "✅ Relatório gerado com " +
+        capturas.length +
+        " UGD(s).";
+
+}
+
+
+
+/* ==========================================================
+   COPIAR WHATSAPP
+========================================================== */
+
+async function copiarWhatsApp(){
+
+    if(
+        !pegar("relatorio")
+        .value
+        .trim()
+    ){
+
+        gerarRelatorio();
+
+    }
+
+
+    const texto =
+        pegar("relatorio")
+        .value;
+
+
+    if(!texto){
+
+        return;
+
+    }
+
+
+    try{
+
+        await navigator
+            .clipboard
+            .writeText(
+                texto
+            );
+
+    }catch(e){
+
+        pegar("relatorio")
+            .select();
+
+
+        document.execCommand(
+            "copy"
+        );
+
+    }
+
+
+    pegar("status")
+        .textContent =
+        "✅ Relatório copiado. Agora cole no WhatsApp.";
+
+}
+
+
+
+/* ==========================================================
+   LIMPAR
+========================================================== */
+
+function limparDados(){
+
+    capturas =
+        [];
+
+    ultimaAssinatura =
+        "";
+
+
+    atualizarTabela();
+
+
+    pegar(
+        "relatorio"
+    ).value =
+        "";
+
+
+    [
+        "ugdAtual",
+        "grupoAtual",
+        "identificacaoAtual",
+        "hrmAtual",
+        "statusAtual",
+        "osAtual",
+        "causaAtual",
+        "ocorrenciasAtual",
+        "acaoAtual",
+        "previsaoAtual",
+        "statusAcaoAtual",
+        "horasAtual"
+
+    ].forEach(
+        id => {
+
+            pegar(id)
+                .textContent =
+                "-";
+
+        }
+    );
+
+
+    pegar(
+        "status"
+    ).textContent =
+        "Aguardando ativação da captura.";
+
+}
+
+
+
+/* ==========================================================
+   OBSERVADOR EXTRA
+========================================================== */
+
+/*
+   Além do intervalo de 700 ms, usamos MutationObserver.
+   Assim, se o Sankhya alterar o conteúdo da tela quando
+   você clicar na seta, tentamos capturar novamente.
+*/
+
+const observador =
+    new MutationObserver(
+        function(){
+
+            if(
+                capturaAtiva
+            ){
+
+                verificarTela();
+
+            }
+
+        }
+    );
+
+
+observador.observe(
+    document.body,
+    {
+        childList:true,
+        subtree:true,
+        characterData:true
+    }
+);
+
+</script>
+
+</body>
+</html>
