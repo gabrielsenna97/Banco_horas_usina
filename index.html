@@ -1,1786 +1,2038 @@
-// ==UserScript==
-// @name         UTE Maués - Capturador PIE
-// @namespace    UTE-MAUES
-// @version      2.0
-// @description  Captura os registros do PIE conforme o usuário avança pelas setas.
-// @match        *://*/*
-// @grant        none
-// @run-at       document-idle
-// ==/UserScript==
+<!DOCTYPE html>
+<html lang="pt-BR">
 
-(function () {
-    'use strict';
+<head>
 
-    /*
-    ============================================================
-       UTE MAUÉS - CAPTURADOR PIE
-       VERSÃO 2.0
+    <meta charset="UTF-8">
 
-       IMPORTANTE:
-       - NÃO faz requisições.
-       - NÃO usa API.
-       - NÃO grava nada no Sankhya.
-       - Apenas lê o conteúdo atualmente exibido.
-       - Não usa polling contínuo.
-       - Observa somente alterações do DOM.
-    ============================================================
-    */
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    if (window.__UTE_MAUES_CAPTURADOR__) return;
-    window.__UTE_MAUES_CAPTURADOR__ = true;
+    <title>UTE Maués - Capturador PIE</title>
 
-    // ==========================================================
-    // CONFIGURAÇÃO
-    // ==========================================================
+    <style>
 
-    const STORAGE_KEY = 'UTE_MAUES_PIE_REGISTROS_V2';
-
-    let registros = [];
-    let ativo = false;
-    let ultimoRegistro = '';
-    let capturaEmAndamento = false;
-
-    // ==========================================================
-    // UTILIDADES
-    // ==========================================================
-
-    function normalizarTexto(valor) {
-        if (valor === null || valor === undefined) return '';
-
-        return String(valor)
-            .replace(/\u00A0/g, ' ')
-            .replace(/\r/g, '')
-            .replace(/[ \t]+/g, ' ')
-            .trim();
-    }
-
-    function limparNumero(valor) {
-        return normalizarTexto(valor)
-            .replace(/\s+/g, '')
-            .trim();
-    }
-
-    function limparHRM(valor) {
-        let texto = normalizarTexto(valor);
-
-        if (!texto) return '';
-
-        /*
-        Remove acréscimos comuns encontrados no HRM.
-
-        Exemplos:
-        22.438 + 120
-        22438+120
-        22.438 +120h
-        22438 (+120)
-        */
-
-        texto = texto
-            .replace(/\s*\+\s*[\d.,]+(?:\s*h)?/gi, '')
-            .replace(/\(\s*\+\s*[\d.,]+\s*(?:h)?\s*\)/gi, '')
-            .replace(/\[\s*\+\s*[\d.,]+\s*(?:h)?\s*\]/gi, '')
-            .trim();
-
-        return texto;
-    }
-
-    function somenteNumero(valor) {
-        const texto = normalizarTexto(valor);
-
-        const encontrado = texto.match(
-            /\d{1,3}(?:\.\d{3})*(?:,\d+)?|\d+(?:\.\d+)?/
-        );
-
-        return encontrado ? encontrado[0] : '';
-    }
-
-    function textoPagina() {
-        return normalizarTexto(document.body ? document.body.innerText : '');
-    }
-
-    // ==========================================================
-    // LOCALIZAR ELEMENTOS
-    // ==========================================================
-
-    function todosElementos() {
-        return Array.from(
-            document.querySelectorAll(
-                'input, textarea, select, [contenteditable="true"]'
-            )
-        );
-    }
-
-    function textoElemento(el) {
-        if (!el) return '';
-
-        if (
-            el.tagName === 'INPUT' ||
-            el.tagName === 'TEXTAREA' ||
-            el.tagName === 'SELECT'
-        ) {
-            return normalizarTexto(el.value);
+        * {
+            box-sizing: border-box;
         }
 
-        return normalizarTexto(el.innerText || el.textContent || '');
-    }
+        body {
 
-    function encontrarPorLabel(nome) {
+            margin: 0;
 
-        const alvo = normalizarTexto(nome).toUpperCase();
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
 
-        const elementos = todosElementos();
+            background: #f1f3f5;
 
-        for (const el of elementos) {
-
-            let label = '';
-
-            if (el.getAttribute('aria-label')) {
-                label = el.getAttribute('aria-label');
-            }
-
-            if (el.getAttribute('name')) {
-                label += ' ' + el.getAttribute('name');
-            }
-
-            if (el.getAttribute('placeholder')) {
-                label += ' ' + el.getAttribute('placeholder');
-            }
-
-            label = normalizarTexto(label).toUpperCase();
-
-            if (label.includes(alvo)) {
-                return textoElemento(el);
-            }
+            color: #222;
         }
 
-        return '';
-    }
+        .topo {
 
-    function buscarValorPorTexto(nome) {
+            background: #1f2937;
 
-        const pagina = textoPagina();
+            color: white;
 
-        const linhas = pagina
-            .split('\n')
-            .map(normalizarTexto)
-            .filter(Boolean);
+            padding: 18px;
 
-        const alvo = nome.toUpperCase();
-
-        for (let i = 0; i < linhas.length; i++) {
-
-            const linha = linhas[i];
-
-            if (linha === alvo || linha.startsWith(alvo)) {
-
-                /*
-                Primeiro tenta encontrar o valor na própria linha.
-                */
-
-                const depois = linha
-                    .replace(new RegExp('^' + escapeRegex(nome) + '\\s*:?\\s*', 'i'), '')
-                    .trim();
-
-                if (
-                    depois &&
-                    depois.toUpperCase() !== alvo
-                ) {
-                    return depois;
-                }
-
-                /*
-                Caso o Sankhya coloque o valor na linha seguinte.
-                */
-
-                for (let j = i + 1; j < Math.min(i + 4, linhas.length); j++) {
-
-                    const prox = linhas[j];
-
-                    if (!prox) continue;
-
-                    /*
-                    Ignora outros títulos de campos.
-                    */
-
-                    if (
-                        prox.endsWith(':') ||
-                        prox === 'USINA:*' ||
-                        prox === 'GRUPO GERADOR:*' ||
-                        prox === 'DT. REFERÊNCIA:*'
-                    ) {
-                        continue;
-                    }
-
-                    return prox;
-                }
-            }
+            text-align: center;
         }
 
-        return '';
-    }
+        .topo h1 {
 
-    function escapeRegex(texto) {
-        return texto.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    }
+            margin: 0;
 
-    function pegarCampo(nome, aliases = []) {
-
-        const nomes = [nome, ...aliases];
-
-        for (const n of nomes) {
-
-            let valor = encontrarPorLabel(n);
-
-            if (valor) return valor;
-
-            valor = buscarValorPorTexto(n);
-
-            if (valor) return valor;
+            font-size: 22px;
         }
 
-        return '';
-    }
+        .topo p {
 
-    // ==========================================================
-    // IDENTIFICAÇÃO DO REGISTRO
-    // ==========================================================
+            margin:
+                6px 0 0;
 
-    function identificarCodigoRegistro() {
+            opacity: .8;
 
-        const pagina = textoPagina();
-
-        /*
-        Procura padrões como:
-        52171
-        Código Informação
-        svg 52171
-        */
-
-        const candidatos = [];
-
-        const regex = /\b\d{4,8}\b/g;
-
-        let m;
-
-        while ((m = regex.exec(pagina)) !== null) {
-
-            const numero = m[0];
-
-            if (
-                numero !== '2026' &&
-                numero !== '2025' &&
-                numero !== '2024'
-            ) {
-                candidatos.push(numero);
-            }
+            font-size: 13px;
         }
 
-        /*
-        Em muitos registros do PIE o código aparece como 52171.
-        */
+        .container {
 
-        if (candidatos.length) {
+            width: 95%;
 
-            /*
-            Preferência para números de 5 dígitos.
-            */
+            max-width: 1200px;
 
-            const cinco = candidatos.find(x => x.length === 5);
-
-            if (cinco) return cinco;
-
-            return candidatos[0];
+            margin: 20px auto;
         }
 
-        return '';
-    }
+        .card {
 
-    function identificarUGD() {
+            background: white;
 
-        const pagina = textoPagina().toUpperCase();
+            border-radius: 10px;
 
-        /*
-        Procura MUUGD-01, MUUGD-02 etc.
-        */
+            padding: 18px;
 
-        let match = pagina.match(/MUUGD[\s\-]*0*(\d{1,2})/i);
+            margin-bottom: 15px;
 
-        if (match) {
-            const n = parseInt(match[1], 10);
-
-            if (n >= 1 && n <= 60) {
-                return `UGD-${String(n).padStart(2, '0')}`;
-            }
+            box-shadow:
+                0 2px 10px
+                rgba(0,0,0,.08);
         }
 
-        /*
-        Procura UGD-01, UGD 01 etc.
-        */
+        .botoes {
 
-        match = pagina.match(/\bUGD[\s\-]*0*(\d{1,2})\b/i);
+            display: flex;
 
-        if (match) {
+            flex-wrap: wrap;
 
-            const n = parseInt(match[1], 10);
+            gap: 10px;
 
-            if (n >= 1 && n <= 60) {
-                return `UGD-${String(n).padStart(2, '0')}`;
-            }
+            margin-bottom: 15px;
         }
 
-        /*
-        Procura identificação GG.
-        */
+        button {
 
-        const identificacao = pegarCampo(
-            'IDENTIFICAÇÃO GG',
-            ['IDENTIFICACAO GG']
-        );
+            border: none;
 
-        match = identificacao.match(/(?:UGD|MUUGD)[\s\-]*0*(\d{1,2})/i);
+            border-radius: 7px;
 
-        if (match) {
+            padding:
+                11px 16px;
 
-            const n = parseInt(match[1], 10);
+            cursor: pointer;
 
-            if (n >= 1 && n <= 60) {
-                return `UGD-${String(n).padStart(2, '0')}`;
-            }
+            font-weight: bold;
+
+            font-size: 14px;
         }
 
-        return '';
-    }
+        .btn-principal {
 
-    function identificarEquipamento() {
+            background: #168b45;
 
-        const identificacao = pegarCampo(
-            'IDENTIFICAÇÃO GG',
-            ['IDENTIFICACAO GG']
-        );
-
-        if (identificacao) {
-
-            /*
-            Remove texto desnecessário mantendo UTE550...
-            */
-
-            const match = identificacao.match(
-                /UTE\d{3,4}[-\s]?[A-Z0-9]+/i
-            );
-
-            if (match) {
-                return normalizarTexto(match[0]);
-            }
-
-            return identificacao;
+            color: white;
         }
 
-        const grupo = pegarCampo(
-            'GRUPO GERADOR',
-            ['GRUPO GERADOR:*']
-        );
+        .btn-secundario {
 
-        if (grupo) return grupo;
+            background: #e5e7eb;
 
-        return '';
-    }
-
-    // ==========================================================
-    // CAPTURA DO REGISTRO
-    // ==========================================================
-
-    function lerRegistro() {
-
-        const registro = {
-
-            codigo: identificarCodigoRegistro(),
-
-            ugd: identificarUGD(),
-
-            equipamento: identificarEquipamento(),
-
-            hrm: limparHRM(
-                pegarCampo(
-                    'HORÍMETRO',
-                    ['HORIMETRO']
-                )
-            ),
-
-            status: pegarCampo(
-                'STATUS OPERAÇÃO',
-                ['STATUS OPERACAO']
-            ),
-
-            os: pegarCampo(
-                'NUM. OS',
-                ['NUM OS', 'Nº OS', 'OS']
-            ),
-
-            causa: pegarCampo(
-                'CAUSA'
-            ),
-
-            ocorrencias: pegarCampo(
-                'OCORRÊNCIAS',
-                ['OCORRENCIAS']
-            ),
-
-            acao: pegarCampo(
-                'AÇÃO',
-                ['ACAO']
-            ),
-
-            previsao: pegarCampo(
-                'Previsão de retorno',
-                ['PREVISÃO DE RETORNO', 'PREVISAO DE RETORNO']
-            ),
-
-            statusAcao: pegarCampo(
-                'Status Ação',
-                ['STATUS AÇÃO', 'STATUS ACAO']
-            ),
-
-            horas: pegarCampo(
-                'Horas',
-                ['HORAS']
-            ),
-
-            dia: pegarCampo(
-                'DIA'
-            ),
-
-            dataReferencia: pegarCampo(
-                'DT. REFERÊNCIA',
-                ['DT. REFERENCIA']
-            )
-        };
-
-        /*
-        Status alternativo.
-        */
-
-        if (!registro.status) {
-
-            const pagina = textoPagina();
-
-            const statusPossiveis = [
-                'Operando com restrição',
-                'Operando',
-                'Disponível',
-                'Indisponível',
-                'Manutenção mecânica',
-                'Manutenção elétrica',
-                'Substituição'
-            ];
-
-            for (const status of statusPossiveis) {
-
-                if (
-                    pagina
-                        .toUpperCase()
-                        .includes(status.toUpperCase())
-                ) {
-                    registro.status = status;
-                    break;
-                }
-            }
+            color: #222;
         }
 
-        /*
-        Limpeza.
-        */
+        .btn-perigo {
 
-        registro.ugd = normalizarTexto(registro.ugd);
-        registro.equipamento = normalizarTexto(registro.equipamento);
-        registro.hrm = normalizarTexto(registro.hrm);
-        registro.status = normalizarTexto(registro.status);
-        registro.os = normalizarTexto(registro.os);
-        registro.causa = normalizarTexto(registro.causa);
-        registro.ocorrencias = normalizarTexto(registro.ocorrencias);
-        registro.acao = normalizarTexto(registro.acao);
-        registro.previsao = normalizarTexto(registro.previsao);
-        registro.statusAcao = normalizarTexto(registro.statusAcao);
-        registro.horas = normalizarTexto(registro.horas);
+            background: #dc3545;
 
-        return registro;
-    }
-
-    // ==========================================================
-    // ASSINATURA DO REGISTRO
-    // ==========================================================
-
-    function assinatura(registro) {
-
-        return [
-            registro.codigo,
-            registro.ugd,
-            registro.equipamento,
-            registro.hrm,
-            registro.status,
-            registro.os,
-            registro.causa,
-            registro.ocorrencias,
-            registro.acao,
-            registro.previsao
-        ]
-            .map(normalizarTexto)
-            .join('|');
-    }
-
-    // ==========================================================
-    // SALVAR LOCALMENTE
-    // ==========================================================
-
-    function salvarLocal() {
-
-        try {
-
-            localStorage.setItem(
-                STORAGE_KEY,
-                JSON.stringify(registros)
-            );
-
-        } catch (erro) {
-
-            console.warn(
-                'UTE Maués: não foi possível salvar no localStorage.',
-                erro
-            );
-        }
-    }
-
-    function carregarLocal() {
-
-        try {
-
-            const salvo = localStorage.getItem(STORAGE_KEY);
-
-            if (!salvo) return;
-
-            const dados = JSON.parse(salvo);
-
-            if (Array.isArray(dados)) {
-                registros = dados;
-            }
-
-        } catch (erro) {
-
-            console.warn(
-                'UTE Maués: erro ao carregar registros.',
-                erro
-            );
-        }
-    }
-
-    // ==========================================================
-    // INSERIR / ATUALIZAR
-    // ==========================================================
-
-    function salvarRegistro(registro) {
-
-        if (!registro) return false;
-
-        /*
-        Se não conseguiu identificar nada,
-        não salva.
-        */
-
-        if (
-            !registro.ugd &&
-            !registro.codigo &&
-            !registro.equipamento
-        ) {
-            return false;
+            color: white;
         }
 
-        const chave = registro.ugd ||
-            registro.codigo ||
-            registro.equipamento;
+        .btn-whatsapp {
 
-        /*
-        Se existe UGD, atualiza a UGD.
-        */
+            background: #25d366;
 
-        let indice = -1;
-
-        if (registro.ugd) {
-
-            indice = registros.findIndex(
-                r => r.ugd === registro.ugd
-            );
+            color: white;
         }
 
-        /*
-        Caso não tenha UGD, procura pelo código.
-        */
+        button:hover {
 
-        if (
-            indice === -1 &&
-            registro.codigo
-        ) {
-
-            indice = registros.findIndex(
-                r => r.codigo === registro.codigo
-            );
+            opacity: .9;
         }
 
-        if (indice >= 0) {
+        .status {
 
-            /*
-            Mantém informações antigas quando a tela
-            não retornou determinado campo.
-            */
+            padding: 12px;
 
-            const antigo = registros[indice];
+            border-radius: 7px;
 
-            registros[indice] = {
-                ...antigo,
-                ...registro,
+            background: #eef7ee;
 
-                equipamento:
-                    registro.equipamento ||
-                    antigo.equipamento,
+            border:
+                1px solid #cde5cd;
 
-                hrm:
-                    registro.hrm ||
-                    antigo.hrm,
+            margin-bottom: 15px;
 
-                status:
-                    registro.status ||
-                    antigo.status,
-
-                os:
-                    registro.os ||
-                    antigo.os,
-
-                causa:
-                    registro.causa ||
-                    antigo.causa,
-
-                ocorrencias:
-                    registro.ocorrencias ||
-                    antigo.ocorrencias,
-
-                acao:
-                    registro.acao ||
-                    antigo.acao
-            };
-
-        } else {
-
-            registros.push(registro);
+            font-weight: bold;
         }
 
-        registros.sort(
-            (a, b) =>
-                (a.ugd || '').localeCompare(
-                    b.ugd || '',
-                    'pt-BR',
-                    { numeric: true }
-                )
-        );
+        .contador {
 
-        salvarLocal();
-        atualizarPainel();
+            display: grid;
 
-        return true;
-    }
-
-    // ==========================================================
-    // CAPTURAR AGORA
-    // ==========================================================
-
-    function capturarAgora(mostrarMensagem = true) {
-
-        if (capturaEmAndamento) return;
-
-        capturaEmAndamento = true;
-
-        try {
-
-            const registro = lerRegistro();
-
-            if (!registro) return;
-
-            const sig = assinatura(registro);
-
-            /*
-            Evita capturar exatamente a mesma tela.
-            */
-
-            if (sig === ultimoRegistro) {
-                return;
-            }
-
-            ultimoRegistro = sig;
-
-            const salvo = salvarRegistro(registro);
-
-            if (
-                salvo &&
-                mostrarMensagem
-            ) {
-
-                mostrarAviso(
-                    `Capturado: ${registro.ugd || 'registro'}`
+            grid-template-columns:
+                repeat(
+                    auto-fit,
+                    minmax(160px, 1fr)
                 );
+
+            gap: 10px;
+        }
+
+        .contador-item {
+
+            background: #f8f9fa;
+
+            border:
+                1px solid #ddd;
+
+            border-radius: 8px;
+
+            padding: 15px;
+
+            text-align: center;
+        }
+
+        .contador-item strong {
+
+            display: block;
+
+            font-size: 28px;
+
+            margin-top: 5px;
+        }
+
+        table {
+
+            width: 100%;
+
+            border-collapse:
+                collapse;
+        }
+
+        th,
+        td {
+
+            padding: 9px;
+
+            border-bottom:
+                1px solid #ddd;
+
+            text-align: left;
+
+            font-size: 13px;
+        }
+
+        th {
+
+            background: #f3f4f6;
+
+            position: sticky;
+
+            top: 0;
+        }
+
+        .tabela {
+
+            overflow-x: auto;
+
+            max-height: 500px;
+
+            overflow-y: auto;
+        }
+
+        textarea {
+
+            width: 100%;
+
+            min-height: 350px;
+
+            resize: vertical;
+
+            padding: 12px;
+
+            border:
+                1px solid #ccc;
+
+            border-radius: 8px;
+
+            font-family: Arial;
+
+            font-size: 14px;
+
+            line-height: 1.45;
+        }
+
+        .campo {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(
+                    auto-fit,
+                    minmax(220px, 1fr)
+                );
+
+            gap: 10px;
+
+            margin-bottom: 15px;
+        }
+
+        .campo label {
+
+            display: block;
+
+            font-size: 12px;
+
+            font-weight: bold;
+
+            margin-bottom: 4px;
+        }
+
+        .campo input,
+        .campo select {
+
+            width: 100%;
+
+            padding: 9px;
+
+            border:
+                1px solid #ccc;
+
+            border-radius: 6px;
+        }
+
+        .modal {
+
+            display: none;
+
+            position: fixed;
+
+            inset: 0;
+
+            background:
+                rgba(0,0,0,.55);
+
+            z-index: 9999;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 20px;
+        }
+
+        .modal-conteudo {
+
+            background: white;
+
+            width: 95%;
+
+            max-width: 1000px;
+
+            max-height: 90vh;
+
+            overflow-y: auto;
+
+            border-radius: 10px;
+
+            padding: 20px;
+        }
+
+        .modal-topo {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content:
+                space-between;
+
+            margin-bottom: 15px;
+        }
+
+        .modal-topo h2 {
+
+            margin: 0;
+        }
+
+        .fechar {
+
+            background: #eee;
+
+            font-size: 20px;
+
+            padding: 6px 12px;
+        }
+
+        .vazio {
+
+            text-align: center;
+
+            padding: 30px;
+
+            color: #777;
+        }
+
+        @media(max-width:600px) {
+
+            .container {
+
+                width: 98%;
             }
 
-        } finally {
+            button {
 
-            capturaEmAndamento = false;
-        }
-    }
-
-    // ==========================================================
-    // OBSERVADOR DA PÁGINA
-    // ==========================================================
-
-    let timerMudanca = null;
-
-    const observer = new MutationObserver(() => {
-
-        if (!ativo) return;
-
-        /*
-        Não captura imediatamente em cada alteração.
-        Apenas espera a tela terminar de mudar.
-        */
-
-        clearTimeout(timerMudanca);
-
-        timerMudanca = setTimeout(() => {
-
-            capturarSeMudou();
-
-        }, 500);
-    });
-
-    function iniciarObservador() {
-
-        observer.observe(
-            document.body,
-            {
-                childList: true,
-                subtree: true,
-                characterData: true,
-                attributes: false
+                width: 100%;
             }
-        );
-    }
 
-    function capturarSeMudou() {
+            .botoes {
 
-        if (!ativo) return;
+                flex-direction: column;
+            }
 
-        const registro = lerRegistro();
-
-        if (!registro) return;
-
-        const sig = assinatura(registro);
-
-        if (!sig) return;
-
-        if (sig !== ultimoRegistro) {
-
-            ultimoRegistro = sig;
-
-            salvarRegistro(registro);
-
-            mostrarAviso(
-                `Novo registro capturado: ${
-                    registro.ugd || registro.codigo || ''
-                }`
-            );
         }
-    }
 
-    // ==========================================================
-    // INTERFACE
-    // ==========================================================
+    </style>
 
-    function criarInterface() {
+</head>
 
-        const antigo = document.getElementById(
-            'ute-maues-capturador'
-        );
+<body>
 
-        if (antigo) antigo.remove();
+    <!-- =====================================================
+         CABEÇALHO
+    ====================================================== -->
 
-        const painel = document.createElement('div');
+    <header class="topo">
 
-        painel.id = 'ute-maues-capturador';
+        <h1>
+            UTE MAUÉS
+        </h1>
 
-        painel.innerHTML = `
+        <p>
+            Capturador e Gerador de Relatório do PIE
+        </p>
 
-            <div id="ute-header">
+    </header>
 
-                <div>
-                    <b>UTE MAUÉS</b>
-                    <span>CAPTURADOR PIE</span>
-                </div>
 
-                <button id="ute-minimizar"
-                    title="Minimizar">−</button>
+    <main class="container">
 
+
+        <!-- =================================================
+             CONTROLE
+        ================================================== -->
+
+        <section class="card">
+
+            <h2>
+                Controle da Captura
+            </h2>
+
+            <div
+                id="status"
+                class="status"
+            >
+                🟢 Sistema pronto.
             </div>
 
-            <div id="ute-corpo">
+            <div class="botoes">
 
-                <div id="ute-status">
-                    ⚪ Captura desligada
-                </div>
+                <button
+                    class="btn-principal"
+                    onclick="capturarAtual()"
+                >
+                    📥 CAPTURAR REGISTRO ATUAL
+                </button>
 
-                <div class="ute-botoes">
-
-                    <button id="ute-ativar">
-                        ▶ ATIVAR
-                    </button>
-
-                    <button id="ute-capturar">
-                        📥 CAPTURAR
-                    </button>
-
-                </div>
-
-                <div class="ute-contador">
-                    Registros:
-                    <b id="ute-qtd">0</b>
-                </div>
-
-                <div id="ute-atual">
-                    Nenhum registro capturado.
-                </div>
-
-                <div class="ute-botoes">
-
-                    <button id="ute-relatorio">
-                        📊 RELATÓRIO
-                    </button>
-
-                    <button id="ute-copiar">
-                        📋 COPIAR
-                    </button>
-
-                </div>
-
-                <button id="ute-limpar"
-                    class="ute-perigo">
+                <button
+                    class="btn-secundario"
+                    onclick="limparTudo()"
+                >
                     🗑 LIMPAR CAPTURAS
                 </button>
 
+                <button
+                    class="btn-secundario"
+                    onclick="exportarJSON()"
+                >
+                    💾 EXPORTAR DADOS
+                </button>
+
+                <button
+                    class="btn-secundario"
+                    onclick="importarJSON()"
+                >
+                    📂 IMPORTAR DADOS
+                </button>
+
             </div>
-        `;
 
-        document.body.appendChild(painel);
+        </section>
 
-        aplicarEstilo();
 
-        document
-            .getElementById('ute-ativar')
-            .addEventListener(
-                'click',
-                alternarCaptura
-            );
+        <!-- =================================================
+             CONTADORES
+        ================================================== -->
 
-        document
-            .getElementById('ute-capturar')
-            .addEventListener(
-                'click',
-                () => capturarAgora(true)
-            );
+        <section class="card">
 
-        document
-            .getElementById('ute-relatorio')
-            .addEventListener(
-                'click',
-                gerarRelatorio
-            );
+            <h2>
+                Resumo
+            </h2>
 
-        document
-            .getElementById('ute-copiar')
-            .addEventListener(
-                'click',
-                copiarRelatorio
-            );
+            <div class="contador">
 
-        document
-            .getElementById('ute-limpar')
-            .addEventListener(
-                'click',
-                limparCapturas
-            );
+                <div
+                    class="contador-item"
+                >
 
-        document
-            .getElementById('ute-minimizar')
-            .addEventListener(
-                'click',
-                minimizarPainel
-            );
+                    UGDs Capturadas
 
-        atualizarPainel();
-    }
-
-    // ==========================================================
-    // ESTILO
-    // ==========================================================
-
-    function aplicarEstilo() {
-
-        const style = document.createElement('style');
-
-        style.id = 'ute-maues-style';
-
-        style.textContent = `
-
-            #ute-maues-capturador {
-
-                position: fixed;
-
-                top: 80px;
-                right: 20px;
-
-                width: 330px;
-
-                background: #ffffff;
-
-                color: #222;
-
-                border: 1px solid #bbb;
-
-                border-radius: 10px;
-
-                box-shadow:
-                    0 8px 30px rgba(0,0,0,.25);
-
-                z-index: 2147483647;
-
-                font-family:
-                    Arial,
-                    Helvetica,
-                    sans-serif;
-
-                font-size: 13px;
-
-                overflow: hidden;
-            }
-
-            #ute-header {
-
-                display: flex;
-
-                justify-content: space-between;
-
-                align-items: center;
-
-                padding: 12px 14px;
-
-                background: #222;
-
-                color: white;
-
-                cursor: move;
-            }
-
-            #ute-header b {
-
-                display: block;
-
-                font-size: 14px;
-            }
-
-            #ute-header span {
-
-                display: block;
-
-                font-size: 10px;
-
-                opacity: .75;
-
-                margin-top: 2px;
-            }
-
-            #ute-minimizar {
-
-                border: 0;
-
-                background: transparent;
-
-                color: white;
-
-                font-size: 22px;
-
-                cursor: pointer;
-            }
-
-            #ute-corpo {
-
-                padding: 12px;
-            }
-
-            #ute-status {
-
-                padding: 8px;
-
-                border-radius: 6px;
-
-                background: #f1f1f1;
-
-                margin-bottom: 9px;
-
-                font-weight: bold;
-            }
-
-            .ute-botoes {
-
-                display: flex;
-
-                gap: 7px;
-
-                margin-bottom: 8px;
-            }
-
-            .ute-botoes button {
-
-                flex: 1;
-
-                border: 0;
-
-                border-radius: 6px;
-
-                padding: 9px 6px;
-
-                cursor: pointer;
-
-                font-weight: bold;
-
-                background: #eeeeee;
-
-                color: #222;
-            }
-
-            .ute-botoes button:hover {
-
-                filter: brightness(.94);
-            }
-
-            #ute-ativar {
-
-                background: #1677ff;
-
-                color: white;
-            }
-
-            #ute-capturar {
-
-                background: #168b45;
-
-                color: white;
-            }
-
-            #ute-relatorio {
-
-                background: #555;
-
-                color: white;
-            }
-
-            #ute-copiar {
-
-                background: #7a4bc0;
-
-                color: white;
-            }
-
-            .ute-contador {
-
-                text-align: center;
-
-                padding: 7px;
-
-                background: #f5f5f5;
-
-                border-radius: 6px;
-
-                margin-bottom: 8px;
-            }
-
-            #ute-atual {
-
-                padding: 9px;
-
-                background: #fafafa;
-
-                border: 1px solid #ddd;
-
-                border-radius: 6px;
-
-                min-height: 42px;
-
-                margin-bottom: 8px;
-
-                line-height: 1.4;
-            }
-
-            #ute-limpar {
-
-                width: 100%;
-
-                padding: 8px;
-
-                border: 0;
-
-                border-radius: 6px;
-
-                cursor: pointer;
-
-                background: #f0dede;
-
-                color: #a00;
-
-                font-weight: bold;
-            }
-
-            #ute-maues-capturador.ute-minimizado
-            #ute-corpo {
-
-                display: none;
-            }
-
-            #ute-aviso {
-
-                position: fixed;
-
-                top: 20px;
-
-                left: 50%;
-
-                transform:
-                    translateX(-50%);
-
-                background: #222;
-
-                color: white;
-
-                padding: 10px 18px;
-
-                border-radius: 7px;
-
-                z-index: 2147483647;
-
-                font-family: Arial;
-
-                font-size: 13px;
-
-                box-shadow:
-                    0 5px 20px rgba(0,0,0,.3);
-            }
-
-        `;
-
-        document.head.appendChild(style);
-    }
-
-    // ==========================================================
-    // ATIVAR / DESATIVAR
-    // ==========================================================
-
-    function alternarCaptura() {
-
-        ativo = !ativo;
-
-        const status =
-            document.getElementById('ute-status');
-
-        const botao =
-            document.getElementById('ute-ativar');
-
-        if (ativo) {
-
-            status.textContent =
-                '🟢 Captura ATIVA — clique na seta do PIE';
-
-            botao.textContent =
-                '⏹ DESATIVAR';
-
-            botao.style.background =
-                '#c62828';
-
-            /*
-            Captura somente uma vez a tela atual.
-            */
-
-            capturarAgora(true);
-
-            mostrarAviso(
-                'Captura ativada. Agora avance pela seta do PIE.'
-            );
-
-        } else {
-
-            status.textContent =
-                '⚪ Captura desligada';
-
-            botao.textContent =
-                '▶ ATIVAR';
-
-            botao.style.background =
-                '#1677ff';
-
-            mostrarAviso(
-                'Captura desativada.'
-            );
-        }
-    }
-
-    // ==========================================================
-    // PAINEL
-    // ==========================================================
-
-    function atualizarPainel() {
-
-        const qtd =
-            document.getElementById('ute-qtd');
-
-        const atual =
-            document.getElementById('ute-atual');
-
-        if (qtd) {
-            qtd.textContent = registros.length;
-        }
-
-        if (atual) {
-
-            if (!registros.length) {
-
-                atual.textContent =
-                    'Nenhum registro capturado.';
-
-                return;
-            }
-
-            const ultimo =
-                registros[registros.length - 1];
-
-            atual.innerHTML = `
-
-                <b>${escapeHTML(ultimo.ugd || 'UGD não identificada')}</b><br>
-
-                ${escapeHTML(
-                    ultimo.equipamento || ''
-                )}
-
-                <br>
-
-                HRM:
-                <b>${escapeHTML(
-                    ultimo.hrm || '-'
-                )}</b>
-
-                &nbsp; | &nbsp;
-
-                ${escapeHTML(
-                    ultimo.status || '-'
-                )}
-
-                <br>
-
-                OS:
-                ${escapeHTML(
-                    ultimo.os || '-'
-                )}
-            `;
-        }
-    }
-
-    function escapeHTML(texto) {
-
-        return String(texto || '')
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
-    }
-
-    // ==========================================================
-    // AVISO
-    // ==========================================================
-
-    function mostrarAviso(texto) {
-
-        const antigo =
-            document.getElementById('ute-aviso');
-
-        if (antigo) antigo.remove();
-
-        const aviso =
-            document.createElement('div');
-
-        aviso.id = 'ute-aviso';
-
-        aviso.textContent = texto;
-
-        document.body.appendChild(aviso);
-
-        setTimeout(() => {
-
-            aviso.remove();
-
-        }, 1800);
-    }
-
-    // ==========================================================
-    // MINIMIZAR
-    // ==========================================================
-
-    function minimizarPainel() {
-
-        const painel =
-            document.getElementById(
-                'ute-maues-capturador'
-            );
-
-        if (!painel) return;
-
-        painel.classList.toggle(
-            'ute-minimizado'
-        );
-
-        const botao =
-            document.getElementById(
-                'ute-minimizar'
-            );
-
-        botao.textContent =
-            painel.classList.contains(
-                'ute-minimizado'
-            )
-                ? '+'
-                : '−';
-    }
-
-    // ==========================================================
-    // RELATÓRIO WHATSAPP
-    // ==========================================================
-
-    function gerarRelatorio() {
-
-        if (!registros.length) {
-
-            alert(
-                'Ainda não existem registros capturados.'
-            );
-
-            return '';
-        }
-
-        let texto = '';
-
-        texto += '*UTE MAUÉS*\n\n';
-
-        texto += '*STATUS DE DISPONIBILIDADE, ';
-        texto += 'HORÍMETRO E HORAS DE OPERAÇÃO DAS UGDs*\n\n';
-
-        registros.forEach((r) => {
-
-            const status =
-                (r.status || '').toUpperCase();
-
-            let emoji = '🟢';
-
-            if (
-                status.includes('MANUTEN')
-            ) {
-                emoji = '🟠';
-            }
-
-            else if (
-                status.includes('INDISPON')
-            ) {
-                emoji = '🔴';
-            }
-
-            else if (
-                status.includes('RESTRI')
-            ) {
-                emoji = '🟡';
-            }
-
-            else if (
-                status.includes('SUBSTIT')
-            ) {
-                emoji = '⚫';
-            }
-
-            texto +=
-                `${emoji}*${r.ugd || 'UGD'} ` +
-                `${r.equipamento || ''}*\n`;
-
-            texto +=
-                `${r.status || 'STATUS NÃO INFORMADO'}\n`;
-
-            texto +=
-                `HRM- ${r.hrm || '-'}\n`;
-
-            if (r.horas) {
-
-                texto +=
-                    `HORAS DE OPERAÇÃO- ${r.horas}\n`;
-            }
-
-            if (r.os) {
-
-                texto +=
-                    `(OS ${r.os})`;
-            }
-
-            if (r.causa) {
-
-                texto +=
-                    ` ${r.causa}`;
-            }
-
-            if (r.ocorrencias) {
-
-                texto +=
-                    ` ${r.ocorrencias}`;
-            }
-
-            if (r.acao) {
-
-                texto +=
-                    ` AÇÃO: ${r.acao}`;
-            }
-
-            texto += '\n\n';
-        });
-
-        mostrarJanelaRelatorio(texto);
-
-        return texto;
-    }
-
-    // ==========================================================
-    // JANELA DO RELATÓRIO
-    // ==========================================================
-
-    function mostrarJanelaRelatorio(texto) {
-
-        const antigo =
-            document.getElementById(
-                'ute-relatorio-modal'
-            );
-
-        if (antigo) antigo.remove();
-
-        const modal =
-            document.createElement('div');
-
-        modal.id =
-            'ute-relatorio-modal';
-
-        modal.innerHTML = `
-
-            <div style="
-                position:fixed;
-                inset:0;
-                background:rgba(0,0,0,.55);
-                z-index:2147483647;
-                display:flex;
-                align-items:center;
-                justify-content:center;
-            ">
-
-                <div style="
-                    width:min(900px,94vw);
-                    height:min(700px,90vh);
-                    background:white;
-                    border-radius:10px;
-                    padding:15px;
-                    box-shadow:0 10px 40px rgba(0,0,0,.4);
-                    display:flex;
-                    flex-direction:column;
-                    font-family:Arial;
-                ">
-
-                    <div style="
-                        display:flex;
-                        justify-content:space-between;
-                        align-items:center;
-                        margin-bottom:10px;
-                    ">
-
-                        <b>
-                            RELATÓRIO UTE MAUÉS
-                        </b>
-
-                        <button
-                            id="ute-fechar-relatorio"
-                            style="
-                                border:0;
-                                background:#ddd;
-                                border-radius:5px;
-                                padding:7px 12px;
-                                cursor:pointer;
-                            "
-                        >
-                            FECHAR
-                        </button>
-
-                    </div>
-
-                    <textarea
-                        id="ute-texto-relatorio"
-                        style="
-                            flex:1;
-                            width:100%;
-                            box-sizing:border-box;
-                            resize:none;
-                            font-family:Arial;
-                            font-size:14px;
-                            padding:12px;
-                            border:1px solid #ccc;
-                            border-radius:7px;
-                        "
-                    ></textarea>
-
-                    <button
-                        id="ute-copiar-modal"
-                        style="
-                            margin-top:10px;
-                            padding:11px;
-                            border:0;
-                            border-radius:6px;
-                            background:#168b45;
-                            color:white;
-                            font-weight:bold;
-                            cursor:pointer;
-                        "
+                    <strong
+                        id="totalUGD"
                     >
-                        📋 COPIAR PARA WHATSAPP
-                    </button>
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div
+                    class="contador-item"
+                >
+
+                    Disponíveis
+
+                    <strong
+                        id="totalDisponiveis"
+                    >
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div
+                    class="contador-item"
+                >
+
+                    Operando
+
+                    <strong
+                        id="totalOperando"
+                    >
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div
+                    class="contador-item"
+                >
+
+                    Restrição
+
+                    <strong
+                        id="totalRestricao"
+                    >
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div
+                    class="contador-item"
+                >
+
+                    Manutenção
+
+                    <strong
+                        id="totalManutencao"
+                    >
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div
+                    class="contador-item"
+                >
+
+                    Indisponíveis
+
+                    <strong
+                        id="totalIndisponivel"
+                    >
+                        0
+                    </strong>
 
                 </div>
 
             </div>
-        `;
 
-        document.body.appendChild(modal);
+        </section>
 
-        const textarea =
-            document.getElementById(
-                'ute-texto-relatorio'
-            );
 
-        textarea.value = texto;
+        <!-- =================================================
+             TABELA
+        ================================================== -->
 
-        document
-            .getElementById(
-                'ute-fechar-relatorio'
-            )
-            .onclick = () => modal.remove();
+        <section class="card">
 
-        document
-            .getElementById(
-                'ute-copiar-modal'
-            )
-            .onclick = async () => {
+            <h2>
+                Registros Capturados
+            </h2>
 
-                try {
+            <div class="tabela">
 
-                    await navigator.clipboard.writeText(
-                        texto
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                UGD
+                            </th>
+
+                            <th>
+                                Equipamento
+                            </th>
+
+                            <th>
+                                HRM
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                OS
+                            </th>
+
+                            <th>
+                                Causa
+                            </th>
+
+                            <th>
+                                Ação
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody
+                        id="tabelaRegistros"
+                    >
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             RELATÓRIO
+        ================================================== -->
+
+        <section class="card">
+
+            <h2>
+                Relatório para WhatsApp
+            </h2>
+
+            <div class="botoes">
+
+                <button
+                    class="btn-principal"
+                    onclick="gerarRelatorio()"
+                >
+                    📊 GERAR RELATÓRIO
+                </button>
+
+                <button
+                    class="btn-whatsapp"
+                    onclick="copiarWhatsApp()"
+                >
+                    📋 COPIAR PARA WHATSAPP
+                </button>
+
+            </div>
+
+            <textarea
+                id="relatorio"
+                placeholder="O relatório será gerado aqui..."
+            ></textarea>
+
+        </section>
+
+
+    </main>
+
+
+    <!-- =====================================================
+         MODAL DE CAPTURA
+    ====================================================== -->
+
+    <div
+        id="modalCaptura"
+        class="modal"
+    >
+
+        <div class="modal-conteudo">
+
+            <div class="modal-topo">
+
+                <h2>
+                    Capturar UGD
+                </h2>
+
+                <button
+                    class="fechar"
+                    onclick="fecharModal()"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="campo">
+
+                <div>
+
+                    <label>
+                        UGD
+                    </label>
+
+                    <input
+                        id="campoUGD"
+                        placeholder="Ex.: UGD-01"
+                    >
+
+                </div>
+
+
+                <div>
+
+                    <label>
+                        Equipamento
+                    </label>
+
+                    <input
+                        id="campoEquipamento"
+                        placeholder="Ex.: UTE550-0024R"
+                    >
+
+                </div>
+
+
+                <div>
+
+                    <label>
+                        Data
+                    </label>
+
+                    <input
+                        id="campoData"
+                        type="date"
+                    >
+
+                </div>
+
+
+                <div>
+
+                    <label>
+                        HRM
+                    </label>
+
+                    <input
+                        id="campoHRM"
+                        placeholder="Ex.: 22438"
+                    >
+
+                </div>
+
+
+                <div>
+
+                    <label>
+                        Status
+                    </label>
+
+                    <select
+                        id="campoStatus"
+                    >
+
+                        <option value="">
+                            Selecione
+                        </option>
+
+                        <option>
+                            Disponível
+                        </option>
+
+                        <option>
+                            Operando
+                        </option>
+
+                        <option>
+                            Operando com restrição
+                        </option>
+
+                        <option>
+                            Manutenção mecânica
+                        </option>
+
+                        <option>
+                            Manutenção elétrica
+                        </option>
+
+                        <option>
+                            Indisponível
+                        </option>
+
+                        <option>
+                            Substituição
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div>
+
+                    <label>
+                        Número da OS
+                    </label>
+
+                    <input
+                        id="campoOS"
+                        placeholder="Ex.: 272206"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="campo">
+
+                <div>
+
+                    <label>
+                        Causa
+                    </label>
+
+                    <input
+                        id="campoCausa"
+                        placeholder="Causa da ocorrência"
+                    >
+
+                </div>
+
+
+                <div>
+
+                    <label>
+                        Ocorrências
+                    </label>
+
+                    <input
+                        id="campoOcorrencias"
+                        placeholder="Ocorrências"
+                    >
+
+                </div>
+
+
+                <div>
+
+                    <label>
+                        Ação
+                    </label>
+
+                    <input
+                        id="campoAcao"
+                        placeholder="Ação realizada"
+                    >
+
+                </div>
+
+
+                <div>
+
+                    <label>
+                        Previsão de retorno
+                    </label>
+
+                    <input
+                        id="campoPrevisao"
+                        placeholder="Previsão"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="botoes">
+
+                <button
+                    class="btn-principal"
+                    onclick="salvarCaptura()"
+                >
+                    💾 SALVAR REGISTRO
+                </button>
+
+                <button
+                    class="btn-secundario"
+                    onclick="fecharModal()"
+                >
+                    CANCELAR
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        // =====================================================
+        // CONFIGURAÇÃO
+        // =====================================================
+
+        const STORAGE_KEY =
+            "UTE_MAUES_PIE_HTML";
+
+        let registros = [];
+
+
+        // =====================================================
+        // CARREGAR
+        // =====================================================
+
+        function carregarDados() {
+
+            try {
+
+                const dados =
+                    localStorage.getItem(
+                        STORAGE_KEY
                     );
 
-                    mostrarAviso(
-                        'Relatório copiado!'
-                    );
+                if (!dados) {
 
-                } catch (erro) {
+                    registros = [];
 
-                    textarea.select();
-
-                    document.execCommand(
-                        'copy'
-                    );
-
-                    mostrarAviso(
-                        'Relatório copiado!'
-                    );
-                }
-            };
-    }
-
-    // ==========================================================
-    // COPIAR
-    // ==========================================================
-
-    async function copiarRelatorio() {
-
-        if (!registros.length) {
-
-            alert(
-                'Não há registros para copiar.'
-            );
-
-            return;
-        }
-
-        let texto = gerarRelatorio();
-
-        if (!texto) return;
-
-        try {
-
-            await navigator.clipboard.writeText(
-                texto
-            );
-
-            mostrarAviso(
-                'Relatório copiado para o WhatsApp!'
-            );
-
-        } catch (erro) {
-
-            console.warn(erro);
-        }
-    }
-
-    // ==========================================================
-    // LIMPAR
-    // ==========================================================
-
-    function limparCapturas() {
-
-        const confirma =
-            confirm(
-                'Deseja apagar todas as capturas feitas hoje?'
-            );
-
-        if (!confirma) return;
-
-        registros = [];
-
-        ultimoRegistro = '';
-
-        salvarLocal();
-
-        atualizarPainel();
-
-        mostrarAviso(
-            'Capturas apagadas.'
-        );
-    }
-
-    // ==========================================================
-    // ARRASTAR PAINEL
-    // ==========================================================
-
-    function permitirArrastar() {
-
-        const painel =
-            document.getElementById(
-                'ute-maues-capturador'
-            );
-
-        const cabecalho =
-            document.getElementById(
-                'ute-header'
-            );
-
-        if (!painel || !cabecalho) return;
-
-        let arrastando = false;
-        let offsetX = 0;
-        let offsetY = 0;
-
-        cabecalho.addEventListener(
-            'mousedown',
-            (e) => {
-
-                if (
-                    e.target.closest(
-                        '#ute-minimizar'
-                    )
-                ) {
                     return;
                 }
 
-                arrastando = true;
+                registros =
+                    JSON.parse(
+                        dados
+                    );
 
-                const rect =
-                    painel.getBoundingClientRect();
+                if (
+                    !Array.isArray(
+                        registros
+                    )
+                ) {
 
-                offsetX =
-                    e.clientX - rect.left;
+                    registros = [];
+                }
 
-                offsetY =
-                    e.clientY - rect.top;
+            } catch (erro) {
 
-                painel.style.right = 'auto';
+                registros = [];
+
             }
-        );
 
-        document.addEventListener(
-            'mousemove',
-            (e) => {
+        }
 
-                if (!arrastando) return;
 
-                painel.style.left =
-                    `${e.clientX - offsetX}px`;
+        // =====================================================
+        // SALVAR
+        // =====================================================
 
-                painel.style.top =
-                    `${e.clientY - offsetY}px`;
+        function salvarDados() {
+
+            localStorage.setItem(
+
+                STORAGE_KEY,
+
+                JSON.stringify(
+                    registros
+                )
+
+            );
+
+        }
+
+
+        // =====================================================
+        // STATUS
+        // =====================================================
+
+        function mensagem(
+            texto
+        ) {
+
+            document
+                .getElementById(
+                    "status"
+                )
+                .textContent =
+                    texto;
+
+        }
+
+
+        // =====================================================
+        // LIMPAR HRM
+        // =====================================================
+
+        function limparHRM(
+            valor
+        ) {
+
+            valor =
+                String(
+                    valor || ""
+                );
+
+            valor =
+                valor.replace(
+                    /\s*\+\s*[\d.,]+/g,
+                    ""
+                );
+
+            valor =
+                valor.replace(
+                    /\(\s*\+\s*[\d.,]+\s*\)/g,
+                    ""
+                );
+
+            return valor.trim();
+
+        }
+
+
+        // =====================================================
+        // CAPTURAR ATUAL
+        // =====================================================
+
+        function capturarAtual() {
+
+            document
+                .getElementById(
+                    "campoUGD"
+                )
+                .value = "";
+
+            document
+                .getElementById(
+                    "campoEquipamento"
+                )
+                .value = "";
+
+            document
+                .getElementById(
+                    "campoData"
+                )
+                .value = "";
+
+            document
+                .getElementById(
+                    "campoHRM"
+                )
+                .value = "";
+
+            document
+                .getElementById(
+                    "campoStatus"
+                )
+                .value = "";
+
+            document
+                .getElementById(
+                    "campoOS"
+                )
+                .value = "";
+
+            document
+                .getElementById(
+                    "campoCausa"
+                )
+                .value = "";
+
+            document
+                .getElementById(
+                    "campoOcorrencias"
+                )
+                .value = "";
+
+            document
+                .getElementById(
+                    "campoAcao"
+                )
+                .value = "";
+
+            document
+                .getElementById(
+                    "campoPrevisao"
+                )
+                .value = "";
+
+            document
+                .getElementById(
+                    "modalCaptura"
+                )
+                .style.display =
+                    "flex";
+
+        }
+
+
+        // =====================================================
+        // SALVAR CAPTURA
+        // =====================================================
+
+        function salvarCaptura() {
+
+            const ugd =
+                document
+                    .getElementById(
+                        "campoUGD"
+                    )
+                    .value
+                    .trim();
+
+            const equipamento =
+                document
+                    .getElementById(
+                        "campoEquipamento"
+                    )
+                    .value
+                    .trim();
+
+            if (
+                !ugd &&
+                !equipamento
+            ) {
+
+                alert(
+                    "Informe a UGD ou o equipamento."
+                );
+
+                return;
             }
-        );
 
-        document.addEventListener(
-            'mouseup',
-            () => {
 
-                arrastando = false;
+            const registro = {
+
+                ugd:
+                    ugd,
+
+                equipamento:
+                    equipamento,
+
+                data:
+                    document
+                        .getElementById(
+                            "campoData"
+                        )
+                        .value,
+
+                hrm:
+                    limparHRM(
+                        document
+                            .getElementById(
+                                "campoHRM"
+                            )
+                            .value
+                    ),
+
+                status:
+                    document
+                        .getElementById(
+                            "campoStatus"
+                        )
+                        .value,
+
+                os:
+                    document
+                        .getElementById(
+                            "campoOS"
+                        )
+                        .value
+                        .trim(),
+
+                causa:
+                    document
+                        .getElementById(
+                            "campoCausa"
+                        )
+                        .value
+                        .trim(),
+
+                ocorrencias:
+                    document
+                        .getElementById(
+                            "campoOcorrencias"
+                        )
+                        .value
+                        .trim(),
+
+                acao:
+                    document
+                        .getElementById(
+                            "campoAcao"
+                        )
+                        .value
+                        .trim(),
+
+                previsao:
+                    document
+                        .getElementById(
+                            "campoPrevisao"
+                        )
+                        .value
+                        .trim()
+
+            };
+
+
+            // =================================================
+            // ATUALIZAR SE JÁ EXISTIR
+            // =================================================
+
+            const indice =
+                registros.findIndex(
+                    item =>
+                        item.ugd ===
+                        registro.ugd
+                );
+
+
+            if (
+                indice >= 0
+            ) {
+
+                registros[indice] =
+                    registro;
+
+            } else {
+
+                registros.push(
+                    registro
+                );
+
             }
-        );
-    }
 
-    // ==========================================================
-    // INICIALIZAÇÃO
-    // ==========================================================
 
-    function iniciar() {
+            // =================================================
+            // ORDENAR
+            // =================================================
 
-        carregarLocal();
+            registros.sort(
+                function (
+                    a,
+                    b
+                ) {
 
-        criarInterface();
+                    return (
+                        a.ugd || ""
+                    ).localeCompare(
+                        b.ugd || "",
+                        "pt-BR",
+                        {
+                            numeric: true
+                        }
+                    );
 
-        permitirArrastar();
+                }
+            );
 
-        iniciarObservador();
 
-        console.log(
-            'UTE Maués - Capturador PIE iniciado.'
-        );
-    }
+            salvarDados();
 
-    /*
-    Espera a página terminar de carregar.
-    */
+            atualizarTela();
 
-    if (
-        document.readyState ===
-        'loading'
-    ) {
+            fecharModal();
 
-        document.addEventListener(
-            'DOMContentLoaded',
-            iniciar
-        );
+            mensagem(
+                "✅ Registro salvo com sucesso."
+            );
 
-    } else {
+        }
 
-        iniciar();
-    }
 
-})();
+        // =====================================================
+        // FECHAR MODAL
+        // =====================================================
+
+        function fecharModal() {
+
+            document
+                .getElementById(
+                    "modalCaptura"
+                )
+                .style.display =
+                    "none";
+
+        }
+
+
+        // =====================================================
+        // ATUALIZAR TELA
+        // =====================================================
+
+        function atualizarTela() {
+
+            const tabela =
+                document
+                    .getElementById(
+                        "tabelaRegistros"
+                    );
+
+            tabela.innerHTML = "";
+
+
+            let disponiveis = 0;
+
+            let operando = 0;
+
+            let restricao = 0;
+
+            let manutencao = 0;
+
+            let indisponivel = 0;
+
+
+            if (
+                registros.length === 0
+            ) {
+
+                tabela.innerHTML = `
+
+                    <tr>
+
+                        <td
+                            colspan="7"
+                            class="vazio"
+                        >
+                            Nenhum registro capturado.
+                        </td>
+
+                    </tr>
+
+                `;
+
+            }
+
+
+            registros.forEach(
+                function (
+                    registro
+                ) {
+
+                    const status =
+                        (
+                            registro.status ||
+                            ""
+                        ).toUpperCase();
+
+
+                    if (
+                        status.includes(
+                            "DISPONÍVEL"
+                        )
+                    ) {
+
+                        disponiveis++;
+
+                    }
+
+
+                    if (
+                        status ===
+                        "OPERANDO"
+                    ) {
+
+                        operando++;
+
+                    }
+
+
+                    if (
+                        status.includes(
+                            "RESTRI"
+                        )
+                    ) {
+
+                        restricao++;
+
+                    }
+
+
+                    if (
+                        status.includes(
+                            "MANUTEN"
+                        )
+                    ) {
+
+                        manutencao++;
+
+                    }
+
+
+                    if (
+                        status.includes(
+                            "INDISPON"
+                        )
+                    ) {
+
+                        indisponivel++;
+
+                    }
+
+
+                    const linha =
+                        document
+                            .createElement(
+                                "tr"
+                            );
+
+
+                    linha.innerHTML = `
+
+                        <td>
+                            ${esc(
+                                registro.ugd
+                            )}
+                        </td>
+
+                        <td>
+                            ${esc(
+                                registro.equipamento
+                            )}
+                        </td>
+
+                        <td>
+                            ${esc(
+                                registro.hrm
+                            )}
+                        </td>
+
+                        <td>
+                            ${esc(
+                                registro.status
+                            )}
+                        </td>
+
+                        <td>
+                            ${esc(
+                                registro.os
+                            )}
+                        </td>
+
+                        <td>
+                            ${esc(
+                                registro.causa
+                            )}
+                        </td>
+
+                        <td>
+                            ${esc(
+                                registro.acao
+                            )}
+                        </td>
+
+                    `;
+
+
+                    tabela.appendChild(
+                        linha
+                    );
+
+                }
+            );
+
+
+            document
+                .getElementById(
+                    "totalUGD"
+                )
+                .textContent =
+                    registros.length;
+
+
+            document
+                .getElementById(
+                    "totalDisponiveis"
+                )
+                .textContent =
+                    disponiveis;
+
+
+            document
+                .getElementById(
+                    "totalOperando"
+                )
+                .textContent =
+                    operando;
+
+
+            document
+                .getElementById(
+                    "totalRestricao"
+                )
+                .textContent =
+                    restricao;
+
+
+            document
+                .getElementById(
+                    "totalManutencao"
+                )
+                .textContent =
+                    manutencao;
+
+
+            document
+                .getElementById(
+                    "totalIndisponivel"
+                )
+                .textContent =
+                    indisponivel;
+
+        }
+
+
+        // =====================================================
+        // ESCAPAR
+        // =====================================================
+
+        function esc(
+            valor
+        ) {
+
+            return String(
+                valor || ""
+            )
+            .replace(
+                /&/g,
+                "&amp;"
+            )
+            .replace(
+                /</g,
+                "&lt;"
+            )
+            .replace(
+                />/g,
+                "&gt;"
+            )
+            .replace(
+                /"/g,
+                "&quot;"
+            )
+            .replace(
+                /'/g,
+                "&#039;"
+            );
+
+        }
+
+
+        // =====================================================
+        // EMOJI
+        // =====================================================
+
+        function obterEmoji(
+            status
+        ) {
+
+            const s =
+                String(
+                    status || ""
+                ).toUpperCase();
+
+
+            if (
+                s.includes(
+                    "SUBSTIT"
+                )
+            ) {
+
+                return "⚫";
+
+            }
+
+
+            if (
+                s.includes(
+                    "INDISPON"
+                )
+            ) {
+
+                return "🔴";
+
+            }
+
+
+            if (
+                s.includes(
+                    "MANUTEN"
+                )
+            ) {
+
+                return "🟠";
+
+            }
+
+
+            if (
+                s.includes(
+                    "RESTRI"
+                )
+            ) {
+
+                return "🟡";
+
+            }
+
+
+            return "🟢";
+
+        }
+
+
+        // =====================================================
+        // GERAR RELATÓRIO
+        // =====================================================
+
+        function gerarRelatorio() {
+
+            if (
+                registros.length === 0
+            ) {
+
+                alert(
+                    "Nenhum registro foi capturado."
+                );
+
+                return "";
+
+            }
+
+
+            let texto = "";
+
+
+            texto +=
+                "*UTE MAUÉS*\n\n";
+
+
+            texto +=
+                "*STATUS DE DISPONIBILIDADE, HORÍMETRO E HORAS DE OPERAÇÃO DAS UGDs*\n\n";
+
+
+            registros.forEach(
+                function (
+                    registro
+                ) {
+
+                    const emoji =
+                        obterEmoji(
+                            registro.status
+                        );
+
+
+                    texto +=
+                        `${emoji}*${registro.ugd || "UGD"} ${registro.equipamento || ""}*\n`;
+
+
+                    texto +=
+                        `${registro.status || "STATUS NÃO INFORMADO"}\n`;
+
+
+                    texto +=
+                        `HRM- ${registro.hrm || "-"}\n`;
+
+
+                    if (
+                        registro.os
+                    ) {
+
+                        texto +=
+                            `(OS ${registro.os}) `;
+
+                    }
+
+
+                    if (
+                        registro.causa
+                    ) {
+
+                        texto +=
+                            `${registro.causa} `;
+
+                    }
+
+
+                    if (
+                        registro.ocorrencias
+                    ) {
+
+                        texto +=
+                            `${registro.ocorrencias} `;
+
+                    }
+
+
+                    if (
+                        registro.acao
+                    ) {
+
+                        texto +=
+                            `AÇÃO: ${registro.acao}`;
+
+                    }
+
+
+                    texto +=
+                        "\n\n";
+
+                }
+            );
+
+
+            document
+                .getElementById(
+                    "relatorio"
+                )
+                .value =
+                    texto;
+
+
+            mensagem(
+                "📊 Relatório gerado."
+            );
+
+
+            return texto;
+
+        }
+
+
+        // =====================================================
+        // COPIAR WHATSAPP
+        // =====================================================
+
+        async function copiarWhatsApp() {
+
+            let texto =
+                document
+                    .getElementById(
+                        "relatorio"
+                    )
+                    .value;
+
+
+            if (!texto) {
+
+                texto =
+                    gerarRelatorio();
+
+            }
+
+
+            if (!texto) {
+                return;
+            }
+
+
+            try {
+
+                await navigator
+                    .clipboard
+                    .writeText(
+                        texto
+                    );
+
+
+                mensagem(
+                    "📋 Relatório copiado para o WhatsApp."
+                );
+
+
+            } catch (erro) {
+
+                const area =
+                    document.createElement(
+                        "textarea"
+                    );
+
+
+                area.value =
+                    texto;
+
+
+                document.body
+                    .appendChild(
+                        area
+                    );
+
+
+                area.select();
+
+
+                document.execCommand(
+                    "copy"
+                );
+
+
+                area.remove();
+
+
+                mensagem(
+                    "📋 Relatório copiado."
+                );
+
+            }
+
+        }
+
+
+        // =====================================================
+        // LIMPAR TUDO
+        // =====================================================
+
+        function limparTudo() {
+
+            const confirmar =
+                confirm(
+                    "Deseja apagar todos os registros capturados?"
+                );
+
+
+            if (!confirmar) {
+                return;
+            }
+
+
+            registros = [];
+
+
+            salvarDados();
+
+            atualizarTela();
+
+
+            document
+                .getElementById(
+                    "relatorio"
+                )
+                .value = "";
+
+
+            mensagem(
+                "🗑 Todas as capturas foram apagadas."
+            );
+
+        }
+
+
+        // =====================================================
+        // EXPORTAR JSON
+        // =====================================================
+
+        function exportarJSON() {
+
+            if (
+                registros.length === 0
+            ) {
+
+                alert(
+                    "Não existem registros para exportar."
+                );
+
+                return;
+
+            }
+
+
+            const dados =
+                JSON.stringify(
+                    registros,
+                    null,
+                    2
+                );
+
+
+            const arquivo =
+                new Blob(
+                    [
+                        dados
+                    ],
+                    {
+                        type:
+                            "application/json"
+                    }
+                );
+
+
+            const url =
+                URL.createObjectURL(
+                    arquivo
+                );
+
+
+            const link =
+                document.createElement(
+                    "a"
+                );
+
+
+            link.href =
+                url;
+
+
+            link.download =
+                "UTE_MAUES_PIE.json";
+
+
+            link.click();
+
+
+            URL.revokeObjectURL(
+                url
+            );
+
+        }
+
+
+        // =====================================================
+        // IMPORTAR JSON
+        // =====================================================
+
+        function importarJSON() {
+
+            const input =
+                document.createElement(
+                    "input"
+                );
+
+
+            input.type =
+                "file";
+
+
+            input.accept =
+                ".json";
+
+
+            input.onchange =
+                function (
+                    evento
+                ) {
+
+                    const arquivo =
+                        evento.target
+                            .files[0];
+
+
+                    if (!arquivo) {
+                        return;
+                    }
+
+
+                    const leitor =
+                        new FileReader();
+
+
+                    leitor.onload =
+                        function () {
+
+                            try {
+
+                                const dados =
+                                    JSON.parse(
+                                        leitor.result
+                                    );
+
+
+                                if (
+                                    !Array.isArray(
+                                        dados
+                                    )
+                                ) {
+
+                                    alert(
+                                        "Arquivo inválido."
+                                    );
+
+                                    return;
+
+                                }
+
+
+                                registros =
+                                    dados;
+
+
+                                salvarDados();
+
+                                atualizarTela();
+
+
+                                mensagem(
+                                    "📂 Dados importados."
+                                );
+
+
+                            } catch (erro) {
+
+                                alert(
+                                    "Não foi possível ler o arquivo."
+                                );
+
+                            }
+
+                        };
+
+
+                    leitor.readAsText(
+                        arquivo
+                    );
+
+                };
+
+
+            input.click();
+
+        }
+
+
+        // =====================================================
+        // INICIALIZAÇÃO
+        // =====================================================
+
+        carregarDados();
+
+        atualizarTela();
+
+    </script>
+
+</body>
+
+</html>
