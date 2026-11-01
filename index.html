@@ -19,6 +19,120 @@ button.primary,button.secondary{border:0;border-radius:7px;padding:11px 16px;fon
 @media(max-width:850px){.layout{grid-template-columns:1fr}aside{display:grid;grid-template-columns:repeat(2,1fr)}.stats,.quick{grid-template-columns:repeat(2,1fr)}main{padding:15px}}
 @media(max-width:540px){header{padding:14px}.date{display:none}.grid,.stats,.quick{grid-template-columns:1fr}.wide{grid-column:auto}.heading{align-items:flex-start;flex-direction:column}}
 @media print{header,aside,.no-print,form{display:none!important}.layout{display:block}main{padding:0}.page{display:none!important}#report{display:block!important}}
+
+/* ===== IDENTIDADE VISUAL REFINADA ===== */
+:root{
+  --navy:#10283f;--blue:#176b9b;--bg:#f3f6f9;--ink:#1d3448;
+  --muted:#718397;--line:#e2e9ef;--white:#fff;--red:#c4474f;
+  --green:#168568;--amber:#c58a2b;--shadow:0 10px 28px rgba(19,48,72,.06)
+}
+body{font-family:Inter,"Segoe UI",Arial,sans-serif;background:#f3f6f9;color:#20384d}
+header{
+  min-height:92px;padding:17px 30px;
+  background:linear-gradient(115deg,#10283f 0%,#16496c 62%,#176b9b 100%);
+  box-shadow:0 4px 18px rgba(11,38,59,.16);position:relative;z-index:2
+}
+.logo{width:54px;height:54px;border:1px solid #ffffff45;border-radius:15px;
+  background:#ffffff12;box-shadow:inset 0 1px 0 #ffffff20;font-size:27px}
+header h1{font-size:21px;font-weight:750;letter-spacing:1.25px}
+header p{font-size:10px;letter-spacing:1.8px;color:#c7d9e6}
+header .eyebrow{color:#8fc2df}
+.date{font-size:12px;color:#e1edf5;background:#ffffff12;border:1px solid #ffffff24;
+  padding:10px 14px;border-radius:10px}
+.layout{grid-template-columns:252px minmax(0,1fr);min-height:calc(100vh - 92px)}
+aside{
+  background:#fff;padding:22px 15px;border-right:1px solid #e4ebf1;
+  box-shadow:5px 0 20px rgba(24,54,78,.025)
+}
+aside:before{content:"MENU PRINCIPAL";display:block;padding:0 12px 12px;
+  color:#9aaaba;font-size:9px;font-weight:800;letter-spacing:1.7px}
+.nav{
+  display:flex;align-items:center;min-height:43px;margin:4px 0;padding:11px 13px;
+  border-radius:9px;color:#536b7e;font-size:12px;font-weight:650;
+  transition:background .18s,color .18s,transform .18s
+}
+.nav:hover{background:#f1f6f9;color:#155c88;transform:translateX(2px)}
+.nav.active{background:linear-gradient(90deg,#e8f3f9,#f3f8fb);color:#125d8b;
+  box-shadow:inset 3px 0 #1875a8}
+aside p.muted{margin-top:22px;border-top:1px solid #edf1f4;padding-top:15px!important;
+  line-height:1.6;color:#91a0ad}
+main{max-width:1600px;padding:30px 34px 48px}
+.heading{margin-bottom:23px}
+.heading h2{font-size:28px;font-weight:750;letter-spacing:-.7px;color:#183a55;margin:5px 0}
+.heading p{font-size:13px;margin:5px 0 0}
+.eyebrow{font-size:9px;letter-spacing:1.8px;color:#7797ad}
+.stats{gap:16px;margin-bottom:20px}
+.stat,.panel{
+  border:1px solid #e4ebf0;border-radius:14px;background:#fff;
+  box-shadow:var(--shadow)
+}
+.stat{position:relative;overflow:hidden;border-top:0;padding:20px 21px}
+.stat:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#2479a7}
+.stat:nth-child(2):before{background:#c94d54}
+.stat:nth-child(3):before{background:#d39a3d}
+.stat:nth-child(4):before{background:#269477}
+.stat small{font-size:9px;letter-spacing:1.1px;color:#8495a4}
+.stat strong{font-size:32px;letter-spacing:-1px;color:#183a55;margin:9px 0 1px}
+.panel{padding:22px;margin-bottom:19px}
+.panel h3{font-size:14px;font-weight:750;color:#234b68;margin:0 0 17px}
+.quick{gap:12px}
+.quick button{
+  background:#fbfdfe;border:1px solid #e4ebf0;border-radius:11px;padding:17px;
+  min-height:88px;color:#1b557a;font-size:12px;transition:.18s
+}
+.quick button:hover{background:#f0f7fb;border-color:#c8dce9;transform:translateY(-2px)}
+.quick small{font-size:11px;line-height:1.45;color:#8293a1}
+.field{font-size:11px;letter-spacing:.1px;color:#526b7e;gap:7px}
+input,select,textarea{
+  padding:11px 12px;border:1px solid #d8e2e9;border-radius:8px;
+  background:#fcfdfe;color:#20384d;font:13px "Segoe UI",Arial,sans-serif;
+  outline:none;transition:border .15s,box-shadow .15s
+}
+input:focus,select:focus,textarea:focus{
+  border-color:#5a9bc0;box-shadow:0 0 0 3px rgba(42,126,174,.11);background:#fff
+}
+textarea{min-height:84px;line-height:1.5}
+button.primary,button.secondary{
+  border-radius:8px;padding:11px 17px;font-size:12px;letter-spacing:.1px;
+  transition:filter .15s,transform .15s
+}
+button.primary{background:linear-gradient(110deg,#145a85,#1978a8);box-shadow:0 4px 10px #145a8520}
+button.primary:hover{filter:brightness(1.07);transform:translateY(-1px)}
+button.secondary{background:#edf4f8;color:#285875;border:1px solid #dce8ef}
+button.secondary:hover{background:#e3eff5}
+.tablebox{border:1px solid #e3eaf0;border-radius:11px;box-shadow:0 5px 18px rgba(19,48,72,.035)}
+.table{min-width:680px}
+.table th{background:#edf4f8;color:#4b6578;padding:13px 12px;font-size:9px;
+  letter-spacing:1px;font-weight:800;border-bottom:1px solid #dfe8ee}
+.table td{padding:12px;font-size:11px;color:#40596d;border-bottom:1px solid #edf1f4}
+.table tr:nth-child(even){background:#fbfcfd}
+.table tr:hover{background:#f1f7fa}
+.actions button{font-size:10px;padding:6px 9px}
+.danger{background:#fff0f0;color:#b33b43}
+.notice{border:1px solid #cce8dc;background:#eff9f4;color:#176b50;border-radius:9px;
+  padding:13px 16px;font-size:12px;box-shadow:var(--shadow)}
+.empty{font-size:12px}
+#report .panel{padding:30px}
+#report h2{color:#17496e;letter-spacing:.4px}
+@media(max-width:850px){
+  .layout{grid-template-columns:1fr}
+  aside{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px}
+  aside:before{grid-column:1/-1}
+  main{padding:22px 18px}
+}
+@media(max-width:540px){
+  header{padding:14px 16px;min-height:78px}
+  header h1{font-size:16px}
+  header p{font-size:8px;letter-spacing:1px}
+  .logo{width:44px;height:44px}
+  .heading h2{font-size:24px}
+  .panel{padding:17px}
+}
+@media print{
+  body{background:#fff}
+  #report .panel{box-shadow:none;border:0}
+}
+
 </style></head>
 <body>
 <header><div class="logo">⚡</div><div><div class="eyebrow">USINA TERMELÉTRICA</div><h1>GESTÃO OPERACIONAL</h1><p>UTE MAUÉS · CONTROLE DE OPERAÇÃO E MANUTENÇÃO</p></div><div class="date" id="date"></div></header>
@@ -33,7 +147,7 @@ button.primary,button.secondary{border:0;border-radius:7px;padding:11px 16px;fon
 <button class="nav" data-page="preventive">◷　Preventivas</button>
 <button class="nav" data-page="daily">▤　Relatório diário</button>
 <button class="nav" data-page="report">▤　Relatórios / impressão</button>
-<p class="muted" style="font-size:11px;padding:10px">Versão HTML · dados salvos neste navegador</p>
+<p class="muted" style="font-size:11px;padding:10px">SISTEMA OPERACIONAL<br>Versão HTML · dados salvos neste navegador</p>
 </aside><main>
 <div id="notice" class="notice"></div>
 <section id="home" class="page active"><div class="heading"><div><div class="eyebrow">VISÃO OPERACIONAL</div><h2>Painel geral</h2><p class="muted">Resumo de operação e manutenção da usina.</p></div><button class="secondary" onclick="refresh()">↻ Atualizar</button></div>
